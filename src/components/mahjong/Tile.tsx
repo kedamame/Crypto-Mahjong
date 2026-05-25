@@ -61,7 +61,7 @@ export function Tile({ tile, info, isFree, isSelected, isHinted, onClick }: Tile
           position: 'absolute',
           inset: 0,
           border: `2px solid ${shadowColor}`,
-          transform: 'translate(2px, 2px)',
+          transform: 'translate(0px, 4px)',
           backgroundColor: shadowColor,
           opacity: 0.35,
         }}

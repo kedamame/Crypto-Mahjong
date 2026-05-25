@@ -20,9 +20,6 @@ import { WinModal } from './WinModal';
 import { useFarcasterMiniApp } from '@/lib/farcaster';
 import { MAHJONG_CONTRACT_ADDRESS, MAHJONG_ABI, isContractConfigured } from '@/lib/contract';
 
-// Speed mode has shallower layouts — board is smaller
-const SPEED_BOARD_W = 12 * 38 + 4 * 3 + 38;
-const SPEED_BOARD_H = 8 * 52 + 4 * 3 + 52;
 
 export function MahjongGame() {
   const [mode, setMode] = useState<GameMode | null>(null);
@@ -151,10 +148,8 @@ export function MahjongGame() {
   // --- Scale to fit viewport ---
   const [scale, setScale] = useState(1);
   useEffect(() => {
-    const bw = mode === 'speed' ? SPEED_BOARD_W : BOARD_W;
-    const bh = mode === 'speed' ? SPEED_BOARD_H : BOARD_H;
     function updateScale() {
-      setScale(Math.min(1, (window.innerWidth - 16) / bw, (window.innerHeight - 160) / bh));
+      setScale(Math.min(1, (window.innerWidth - 16) / BOARD_W, (window.innerHeight - 160) / BOARD_H));
     }
     updateScale();
     window.addEventListener('resize', updateScale);
@@ -163,8 +158,8 @@ export function MahjongGame() {
 
   const remaining = tiles.filter((t) => !t.removed).length;
   const isSpeed = mode === 'speed';
-  const boardW = isSpeed ? SPEED_BOARD_W : BOARD_W;
-  const boardH = isSpeed ? SPEED_BOARD_H : BOARD_H;
+  const boardW = BOARD_W;
+  const boardH = BOARD_H;
 
   // ---- Mode selection screen ----
   if (mode === null) {
