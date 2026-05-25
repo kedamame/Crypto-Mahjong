@@ -16,9 +16,9 @@ interface TileProps {
 const SUIT_ABBR: Record<string, string> = {
   l1:     'L1',
   defi:   'DeFi',
-  l2:     'L2',
-  wind:   'FC',
-  dragon: 'SB',
+  l2:     'ALT',
+  wind:   'INFRA',
+  dragon: 'STABLE',
   flower: 'FL',
   season: 'SN',
 };
