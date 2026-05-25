@@ -11,6 +11,7 @@ import {
   isDeadlocked,
   reshuffleTiles,
   GameTile,
+  GameMode,
   BOARD_W,
   BOARD_H,
 } from '@/lib/mahjong';
@@ -19,9 +20,15 @@ import { WinModal } from './WinModal';
 import { useFarcasterMiniApp } from '@/lib/farcaster';
 import { MAHJONG_CONTRACT_ADDRESS, MAHJONG_ABI, isContractConfigured } from '@/lib/contract';
 
+// Speed mode has shallower layouts — board is smaller
+const SPEED_BOARD_W = 12 * 38 + 4 * 3 + 38;
+const SPEED_BOARD_H = 8 * 52 + 4 * 3 + 52;
+
 export function MahjongGame() {
+  const [mode, setMode] = useState<GameMode | null>(null);
   const [tiles, setTiles] = useState<GameTile[]>([]);
   const [layoutName, setLayoutName] = useState('');
+  const [totalPairs, setTotalPairs] = useState(72);
   const [selectedUid, setSelectedUid] = useState<number | null>(null);
   const [hintedUids, setHintedUids] = useState<Set<number>>(new Set());
   const [pairsMatched, setPairsMatched] = useState(0);
@@ -30,7 +37,6 @@ export function MahjongGame() {
   const [won, setWon] = useState(false);
   const [deadlocked, setDeadlocked] = useState(false);
   const [finalElapsed, setFinalElapsed] = useState(0);
-  const [clearRecorded, setClearRecorded] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { address } = useAccount();
@@ -55,10 +61,12 @@ export function MahjongGame() {
   }, [won, tiles.length, startTime]);
 
   // --- New game ---
-  const startNewGame = useCallback(() => {
-    const { tiles: newTiles, layoutName: newLayout } = dealNewGame();
-    setTiles(newTiles);
-    setLayoutName(newLayout);
+  const startNewGame = useCallback((m?: GameMode) => {
+    const activeMode = m ?? mode ?? 'normal';
+    const result = dealNewGame({ mode: activeMode });
+    setTiles(result.tiles);
+    setLayoutName(result.layoutName);
+    setTotalPairs(result.totalPairs);
     setSelectedUid(null);
     setHintedUids(new Set());
     setPairsMatched(0);
@@ -67,13 +75,13 @@ export function MahjongGame() {
     setWon(false);
     setDeadlocked(false);
     setFinalElapsed(0);
-    setClearRecorded(false);
     if (timerRef.current) clearInterval(timerRef.current);
-  }, []);
+  }, [mode]);
 
-  useEffect(() => {
-    startNewGame();
-  }, [startNewGame]);
+  function selectMode(m: GameMode) {
+    setMode(m);
+    startNewGame(m);
+  }
 
   // --- Tile click handler ---
   function handleTileClick(tile: GameTile) {
@@ -143,17 +151,93 @@ export function MahjongGame() {
   // --- Scale to fit viewport ---
   const [scale, setScale] = useState(1);
   useEffect(() => {
+    const bw = mode === 'speed' ? SPEED_BOARD_W : BOARD_W;
+    const bh = mode === 'speed' ? SPEED_BOARD_H : BOARD_H;
     function updateScale() {
-      setScale(Math.min(1, (window.innerWidth - 16) / BOARD_W, (window.innerHeight - 160) / BOARD_H));
+      setScale(Math.min(1, (window.innerWidth - 16) / bw, (window.innerHeight - 160) / bh));
     }
     updateScale();
     window.addEventListener('resize', updateScale);
     return () => window.removeEventListener('resize', updateScale);
-  }, []);
+  }, [mode]);
 
   const remaining = tiles.filter((t) => !t.removed).length;
-  const totalPairs = 72;
+  const isSpeed = mode === 'speed';
+  const boardW = isSpeed ? SPEED_BOARD_W : BOARD_W;
+  const boardH = isSpeed ? SPEED_BOARD_H : BOARD_H;
 
+  // ---- Mode selection screen ----
+  if (mode === null) {
+    return (
+      <div
+        style={{
+          minHeight: '100dvh',
+          backgroundColor: '#ede9df',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px 20px',
+        }}
+      >
+        <div style={{ fontSize: 9, letterSpacing: 4, color: '#888880', fontFamily: 'Courier New, monospace', marginBottom: 4 }}>
+          CRYPTO
+        </div>
+        <div style={{ fontSize: 36, fontWeight: 900, lineHeight: 1, color: '#141410', fontFamily: 'Courier New, monospace', marginBottom: 4 }}>
+          MAHJONG
+        </div>
+        <div style={{ fontSize: 9, letterSpacing: 3, color: '#3558c8', fontFamily: 'Courier New, monospace', marginBottom: 40 }}>
+          SELECT MODE
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, width: '100%', maxWidth: 300 }}>
+          {/* Normal */}
+          <button
+            onClick={() => selectMode('normal')}
+            style={{
+              backgroundColor: '#141410',
+              border: 'none',
+              color: '#ede9df',
+              padding: '20px 16px',
+              cursor: 'pointer',
+              textAlign: 'left',
+              boxShadow: '4px 4px 0 #888880',
+            }}
+          >
+            <div style={{ fontSize: 16, fontWeight: 900, fontFamily: 'Courier New, monospace', letterSpacing: 2 }}>
+              NORMAL
+            </div>
+            <div style={{ fontSize: 9, color: '#888880', fontFamily: 'Courier New, monospace', marginTop: 6, letterSpacing: 1 }}>
+              144 tiles / 13 layouts / deep stacks
+            </div>
+          </button>
+
+          {/* Speed */}
+          <button
+            onClick={() => selectMode('speed')}
+            style={{
+              backgroundColor: '#3558c8',
+              border: 'none',
+              color: '#ede9df',
+              padding: '20px 16px',
+              cursor: 'pointer',
+              textAlign: 'left',
+              boxShadow: '4px 4px 0 #1a3490',
+            }}
+          >
+            <div style={{ fontSize: 16, fontWeight: 900, fontFamily: 'Courier New, monospace', letterSpacing: 2 }}>
+              SPEED
+            </div>
+            <div style={{ fontSize: 9, color: '#b0c4ff', fontFamily: 'Courier New, monospace', marginTop: 6, letterSpacing: 1 }}>
+              72 tiles / 5 layouts / shallow / easy clear
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ---- Game screen ----
   return (
     <div
       style={{
@@ -184,14 +268,21 @@ export function MahjongGame() {
           <div style={{ fontSize: 24, fontWeight: 900, lineHeight: 1, color: '#141410', fontFamily: 'Courier New, monospace' }}>
             MAHJONG
           </div>
-          {layoutName && (
-            <div style={{ fontSize: 7, letterSpacing: 2, color: '#3558c8', fontFamily: 'Courier New, monospace', marginTop: 2 }}>
-              {layoutName}
-            </div>
-          )}
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 2 }}>
+            {isSpeed && (
+              <div style={{ fontSize: 7, letterSpacing: 2, color: '#ede9df', backgroundColor: '#3558c8', padding: '1px 4px', fontFamily: 'Courier New, monospace', fontWeight: 700 }}>
+                SPEED
+              </div>
+            )}
+            {layoutName && (
+              <div style={{ fontSize: 7, letterSpacing: 2, color: '#3558c8', fontFamily: 'Courier New, monospace' }}>
+                {layoutName}
+              </div>
+            )}
+          </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 20, alignItems: 'flex-end' }}>
+        <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end' }}>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: 8, letterSpacing: 2, color: '#888880', fontFamily: 'Courier New, monospace' }}>PAIRS</div>
             <div style={{ fontSize: 20, fontWeight: 900, color: '#3558c8', fontFamily: 'Courier New, monospace' }}>
@@ -241,7 +332,7 @@ export function MahjongGame() {
           position: 'relative',
           transformOrigin: 'top center',
           transform: `scale(${scale})`,
-          marginBottom: scale < 1 ? `${BOARD_H * (scale - 1)}px` : 0,
+          marginBottom: scale < 1 ? `${boardH * (scale - 1)}px` : 0,
         }}
       >
         <Board
@@ -253,19 +344,12 @@ export function MahjongGame() {
       </div>
 
       {/* Controls */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 8,
-          marginTop: 12,
-          width: '100%',
-          maxWidth: 420,
-        }}
-      >
+      <div style={{ display: 'flex', gap: 8, marginTop: 12, width: '100%', maxWidth: 420 }}>
         {[
-          { label: 'HINT',    action: handleHint,      color: '#1a7a4a' },
-          { label: 'SHUFFLE', action: handleReshuffle,  color: '#888880' },
-          { label: 'NEW',     action: startNewGame,     color: '#141410' },
+          { label: 'HINT',    action: handleHint,               color: '#1a7a4a' },
+          { label: 'SHUFFLE', action: handleReshuffle,           color: '#888880' },
+          { label: 'NEW',     action: () => startNewGame(),      color: '#141410' },
+          { label: 'MODE',    action: () => setMode(null),       color: '#3558c8' },
         ].map((btn) => (
           <button
             key={btn.label}
@@ -276,9 +360,9 @@ export function MahjongGame() {
               backgroundColor: 'transparent',
               border: `2px solid ${btn.color}`,
               color: btn.color,
-              fontSize: 10,
+              fontSize: 9,
               fontWeight: 700,
-              letterSpacing: 2,
+              letterSpacing: 1,
               fontFamily: 'Courier New, monospace',
               cursor: 'pointer',
             }}
@@ -289,15 +373,7 @@ export function MahjongGame() {
       </div>
 
       {/* Remaining count */}
-      <div
-        style={{
-          marginTop: 8,
-          fontSize: 9,
-          color: '#888880',
-          fontFamily: 'Courier New, monospace',
-          letterSpacing: 1,
-        }}
-      >
+      <div style={{ marginTop: 8, fontSize: 9, color: '#888880', fontFamily: 'Courier New, monospace', letterSpacing: 1 }}>
         {remaining} tiles remaining
       </div>
 
@@ -306,9 +382,8 @@ export function MahjongGame() {
           elapsedSec={finalElapsed}
           pairsMatched={pairsMatched}
           clearCount={clearCount}
-          onNewGame={startNewGame}
+          onNewGame={() => startNewGame()}
           onClearRecorded={() => {
-            setClearRecorded(true);
             refetchClearCount();
           }}
         />

@@ -32,7 +32,8 @@ export function Tile({ tile, info, isFree, isSelected, isHinted, onClick }: Tile
   const suitColor = info.suitColor;
   const shadowColor = isSelected ? '#3558c8' : isHinted ? '#1a7a4a' : '#9a9690';
   const borderColor = isSelected ? '#3558c8' : isHinted ? '#1a7a4a' : '#141410';
-  const opacity = isFree ? 1 : 0.72;
+  const opacity = isFree ? 1 : 0.3;
+  const filter = isFree ? 'none' : 'grayscale(0.7) brightness(0.6)';
 
   const iconUrl = CRYPTO_ICON_URLS[tile.typeId];
   const showIcon = !!iconUrl && !imgFailed;
@@ -49,6 +50,7 @@ export function Tile({ tile, info, isFree, isSelected, isHinted, onClick }: Tile
         zIndex: Math.round(z * 10),
         cursor: isFree ? 'pointer' : 'default',
         opacity,
+        filter,
         userSelect: 'none',
         WebkitTapHighlightColor: 'transparent',
       }}

@@ -317,6 +317,65 @@ export const LAYOUTS: Layout[] = LAYOUT_SPECS.map((spec) => ({
   build: () => build(spec.specs),
 }));
 
+// ---- Speed Mode layouts (72 tiles = 36 pairs) ----
+// Shallower, fewer layers → more free tiles visible at once
+
+const SPEED_LAYOUT_SPECS: Array<{ name: string; specs: Spec[] }> = [
+  {
+    // 9×6=54 + 7×2=14 + 2×2=4 = 72
+    name: 'FLAT',
+    specs: [
+      { c0:0, c1:8, r0:0, r1:5, l:0 },
+      { c0:1, c1:7, r0:2, r1:3, l:1 },
+      { c0:3, c1:4, r0:2, r1:3, l:2 },
+    ],
+  },
+  {
+    // 12×4=48 + 8×2=16 + 4×2=8 = 72
+    name: 'WIDE',
+    specs: [
+      { c0:0, c1:11, r0:0, r1:3, l:0 },
+      { c0:2, c1:9,  r0:1, r1:2, l:1 },
+      { c0:4, c1:7,  r0:1, r1:2, l:2 },
+    ],
+  },
+  {
+    // 8×8=64 + 4×2=8 = 72
+    name: 'SQUARE',
+    specs: [
+      { c0:2, c1:9, r0:0, r1:7, l:0 },
+      { c0:4, c1:7, r0:3, r1:4, l:1 },
+    ],
+  },
+  {
+    // 8×6=48 + 6×4=24 = 72
+    name: 'STEPS',
+    specs: [
+      { c0:2, c1:9, r0:1, r1:6, l:0 },
+      { c0:3, c1:8, r0:2, r1:5, l:1 },
+    ],
+  },
+  {
+    // Cross: L0:36 + L1:28 + L2:4 + L3:4 = 72
+    name: 'CROSS',
+    specs: [
+      { c0:0, c1:11, r0:3, r1:4, l:0 },
+      { c0:5, c1:6,  r0:0, r1:2, l:0 },
+      { c0:5, c1:6,  r0:5, r1:7, l:0 },
+      { c0:1, c1:10, r0:3, r1:4, l:1 },
+      { c0:5, c1:6,  r0:1, r1:2, l:1 },
+      { c0:5, c1:6,  r0:5, r1:6, l:1 },
+      { c0:5, c1:6,  r0:3, r1:4, l:2 },
+      { c0:5, c1:6,  r0:3, r1:4, l:3 },
+    ],
+  },
+];
+
+export const SPEED_LAYOUTS: Layout[] = SPEED_LAYOUT_SPECS.map((spec) => ({
+  name: spec.name,
+  build: () => build(spec.specs),
+}));
+
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -326,19 +385,32 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export function dealNewGame(layoutIndex?: number): { tiles: GameTile[]; layoutName: string } {
-  const idx =
-    layoutIndex !== undefined
-      ? layoutIndex % LAYOUTS.length
-      : Math.floor(Math.random() * LAYOUTS.length);
+export type GameMode = 'normal' | 'speed';
 
-  const layout = LAYOUTS[idx];
+export function dealNewGame(options?: { mode?: GameMode; layoutIndex?: number }): {
+  tiles: GameTile[];
+  layoutName: string;
+  totalPairs: number;
+} {
+  const mode = options?.mode ?? 'normal';
+  const allLayouts = mode === 'speed' ? SPEED_LAYOUTS : LAYOUTS;
+  const idx =
+    options?.layoutIndex !== undefined
+      ? options.layoutIndex % allLayouts.length
+      : Math.floor(Math.random() * allLayouts.length);
+
+  const layout = allLayouts[idx];
   const positions = layout.build();
 
+  // Normal: 34×4 + 4 flowers + 4 seasons = 144
+  // Speed:  34×2 + 2 flowers + 2 seasons = 72
+  const copies = mode === 'speed' ? 2 : 4;
+  const bonusCount = mode === 'speed' ? 2 : 4;
+
   const typeIds: string[] = [];
-  for (const t of REGULAR_TILES) for (let k = 0; k < 4; k++) typeIds.push(t.id);
-  for (const t of FLOWER_TILES) typeIds.push(t.id);
-  for (const t of SEASON_TILES) typeIds.push(t.id);
+  for (const t of REGULAR_TILES) for (let k = 0; k < copies; k++) typeIds.push(t.id);
+  for (let i = 0; i < bonusCount; i++) typeIds.push(FLOWER_TILES[i].id);
+  for (let i = 0; i < bonusCount; i++) typeIds.push(SEASON_TILES[i].id);
 
   const shuffledTypes = shuffle(typeIds);
 
@@ -351,6 +423,7 @@ export function dealNewGame(layoutIndex?: number): { tiles: GameTile[]; layoutNa
       matchAnimating: false,
     })),
     layoutName: layout.name,
+    totalPairs: positions.length / 2,
   };
 }
 
