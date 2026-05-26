@@ -428,25 +428,14 @@ export function dealNewGame(options?: { mode?: GameMode; layoutIndex?: number })
 }
 
 // ---- Free tile check ----
-// A tile is free if: (1) not covered from above, (2) has at least one open horizontal side
+// A tile is free if nothing covers it from directly above (same col/row, layer+1).
+// Lateral neighbors do not block — unselectable tiles always visually overlap something.
 export function isFreeTile(tile: GameTile, tiles: GameTile[]): boolean {
   if (tile.removed) return false;
-
-  const active = tiles.filter((t) => !t.removed && t.uid !== tile.uid);
-
-  const covered = active.some(
-    (t) => t.layer === tile.layer + 1 && t.col === tile.col && t.row === tile.row
+  return !tiles.some(
+    (t) => !t.removed && t.uid !== tile.uid &&
+      t.layer === tile.layer + 1 && t.col === tile.col && t.row === tile.row
   );
-  if (covered) return false;
-
-  const hasLeft = active.some(
-    (t) => t.layer === tile.layer && t.col === tile.col - 1 && t.row === tile.row
-  );
-  const hasRight = active.some(
-    (t) => t.layer === tile.layer && t.col === tile.col + 1 && t.row === tile.row
-  );
-
-  return !hasLeft || !hasRight;
 }
 
 export function isTileCovered(tile: GameTile, tiles: GameTile[]): boolean {
@@ -457,14 +446,11 @@ export function isTileCovered(tile: GameTile, tiles: GameTile[]): boolean {
 }
 
 export function getBlockingTileUids(tile: GameTile, tiles: GameTile[]): number[] {
-  const active = tiles.filter((t) => !t.removed && t.uid !== tile.uid);
-  const cover = active.find(
-    (t) => t.layer === tile.layer + 1 && t.col === tile.col && t.row === tile.row
+  const cover = tiles.find(
+    (t) => !t.removed && t.uid !== tile.uid &&
+      t.layer === tile.layer + 1 && t.col === tile.col && t.row === tile.row
   );
-  if (cover) return [cover.uid];
-  const left  = active.find((t) => t.layer === tile.layer && t.col === tile.col - 1 && t.row === tile.row);
-  const right = active.find((t) => t.layer === tile.layer && t.col === tile.col + 1 && t.row === tile.row);
-  return [left?.uid, right?.uid].filter((u): u is number => u !== undefined);
+  return cover ? [cover.uid] : [];
 }
 
 export function canMatch(a: GameTile, b: GameTile): boolean {

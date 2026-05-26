@@ -1,6 +1,6 @@
 'use client';
 
-import { GameTile, ALL_TILE_INFO, isFreeTile, isTileCovered, BOARD_W, BOARD_H } from '@/lib/mahjong';
+import { GameTile, ALL_TILE_INFO, isFreeTile, BOARD_W, BOARD_H } from '@/lib/mahjong';
 import { Tile } from './Tile';
 
 interface BoardProps {
@@ -33,14 +33,12 @@ export function Board({ tiles, selectedUid, hintedUids, flashingUids, onTileClic
         const info = ALL_TILE_INFO.get(tile.typeId);
         if (!info) return null;
         const free = isFreeTile(tile, tiles);
-        const covered = !free && isTileCovered(tile, tiles);
         return (
           <Tile
             key={tile.uid}
             tile={tile}
             info={info}
             isFree={free}
-            isCovered={covered}
             isSelected={tile.uid === selectedUid}
             isHinted={hintedUids.has(tile.uid)}
             isFlashing={flashingUids.has(tile.uid)}

@@ -8,7 +8,6 @@ interface TileProps {
   tile: GameTile;
   info: TileInfo;
   isFree: boolean;
-  isCovered: boolean;
   isSelected: boolean;
   isHinted: boolean;
   isFlashing: boolean;
@@ -26,7 +25,7 @@ const SUIT_ABBR: Record<string, string> = {
   season: 'SN',
 };
 
-export function Tile({ tile, info, isFree, isCovered, isSelected, isHinted, isFlashing, onClick, onBlockedClick }: TileProps) {
+export function Tile({ tile, info, isFree, isSelected, isHinted, isFlashing, onClick, onBlockedClick }: TileProps) {
   const [imgFailed, setImgFailed] = useState(false);
   const { x, y, z } = tilePixelPos(tile);
 
@@ -35,9 +34,8 @@ export function Tile({ tile, info, isFree, isCovered, isSelected, isHinted, isFl
   const suitColor = info.suitColor;
   const shadowColor = isSelected ? '#3558c8' : isHinted ? '#1a7a4a' : '#9a9690';
   const borderColor = isSelected ? '#3558c8' : isHinted ? '#1a7a4a' : '#141410';
-  // covered = buried under stack (very dim); lateral = sandwiched but visible; free = full
-  const opacity = isFree ? 1 : (isCovered ? 0.18 : 0.52);
-  const filter = isFree ? 'none' : (isCovered ? 'grayscale(0.9) brightness(0.5)' : 'brightness(0.75)');
+  const opacity = isFree ? 1 : 0.25;
+  const filter = isFree ? 'none' : 'grayscale(0.85) brightness(0.55)';
 
   const iconUrl = CRYPTO_ICON_URLS[tile.typeId];
   const showIcon = !!iconUrl && !imgFailed;
