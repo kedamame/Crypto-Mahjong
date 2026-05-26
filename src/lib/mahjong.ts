@@ -486,20 +486,18 @@ export function reshuffleTiles(tiles: GameTile[]): GameTile[] {
 // ---- Rendering constants ----
 export const TILE_W = 38;
 export const TILE_H = 52;
-export const LAYER_DX = 0;
-export const LAYER_DY = 30;
-// Vertical padding: shifts all tiles down so the top layer never goes above y=0.
-// Must be >= max layer count in any layout (TOWER uses 7 layers: 0-6).
+export const LAYER_DX = 6;   // rightward shift per layer (diagonal 3D effect)
+export const LAYER_DY = 12;  // upward shift per layer
 const LAYER_TOP = 7;
 
 export function tilePixelPos(tile: GameTile): { x: number; y: number; z: number } {
   return {
-    x: tile.col * TILE_W,
+    x: tile.col * TILE_W + tile.layer * LAYER_DX,
     y: tile.row * TILE_H - tile.layer * LAYER_DY + LAYER_TOP * LAYER_DY,
     z: tile.layer * 10 + (tile.col + tile.row * 0.1),
   };
 }
 
-// Accommodate widest layout (cols 0-11) and tallest stack (LAYER_TOP layers)
-export const BOARD_W = 12 * TILE_W + TILE_W;
+// Accommodate widest layout (cols 0-11) + layer diagonal offset + tile width
+export const BOARD_W = 12 * TILE_W + LAYER_TOP * LAYER_DX + TILE_W;
 export const BOARD_H = 8 * TILE_H + LAYER_TOP * LAYER_DY + TILE_H;
