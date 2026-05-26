@@ -54,3 +54,13 @@ body {
 .tile-appear {
   animation: tileAppear 0.2s ease-out forwards;
 }
+
+@keyframes tileFlash {
+  0%, 100% { box-shadow: none; }
+  25%, 75% { box-shadow: 0 0 0 2px #f59e0b; }
+  50%       { box-shadow: 0 0 0 3px #ef4444; }
+}
+
+.tile-flash {
+  animation: tileFlash 0.65s ease-out;
+}

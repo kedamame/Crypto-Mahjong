@@ -449,6 +449,24 @@ export function isFreeTile(tile: GameTile, tiles: GameTile[]): boolean {
   return !hasLeft || !hasRight;
 }
 
+export function isTileCovered(tile: GameTile, tiles: GameTile[]): boolean {
+  return tiles.some(
+    (t) => !t.removed && t.uid !== tile.uid &&
+      t.layer === tile.layer + 1 && t.col === tile.col && t.row === tile.row
+  );
+}
+
+export function getBlockingTileUids(tile: GameTile, tiles: GameTile[]): number[] {
+  const active = tiles.filter((t) => !t.removed && t.uid !== tile.uid);
+  const cover = active.find(
+    (t) => t.layer === tile.layer + 1 && t.col === tile.col && t.row === tile.row
+  );
+  if (cover) return [cover.uid];
+  const left  = active.find((t) => t.layer === tile.layer && t.col === tile.col - 1 && t.row === tile.row);
+  const right = active.find((t) => t.layer === tile.layer && t.col === tile.col + 1 && t.row === tile.row);
+  return [left?.uid, right?.uid].filter((u): u is number => u !== undefined);
+}
+
 export function canMatch(a: GameTile, b: GameTile): boolean {
   if (a.uid === b.uid) return false;
   const infoA = ALL_TILE_INFO.get(a.typeId);

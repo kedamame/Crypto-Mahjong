@@ -5,6 +5,7 @@ import { useAccount, useReadContract } from 'wagmi';
 import {
   dealNewGame,
   isFreeTile,
+  getBlockingTileUids,
   canMatch,
   findHint,
   isWon,
@@ -34,7 +35,9 @@ export function MahjongGame() {
   const [won, setWon] = useState(false);
   const [deadlocked, setDeadlocked] = useState(false);
   const [finalElapsed, setFinalElapsed] = useState(0);
+  const [flashingUids, setFlashingUids] = useState<Set<number>>(new Set());
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { address } = useAccount();
   useFarcasterMiniApp();
@@ -123,6 +126,15 @@ export function MahjongGame() {
     } else {
       setSelectedUid(tile.uid);
     }
+  }
+
+  // --- Blocked tile feedback ---
+  function handleBlockedTileClick(tile: GameTile) {
+    const uids = getBlockingTileUids(tile, tiles);
+    if (!uids.length) return;
+    if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+    setFlashingUids(new Set(uids));
+    flashTimerRef.current = setTimeout(() => setFlashingUids(new Set()), 700);
   }
 
   // --- Hint ---
@@ -334,7 +346,9 @@ export function MahjongGame() {
           tiles={tiles}
           selectedUid={selectedUid}
           hintedUids={hintedUids}
+          flashingUids={flashingUids}
           onTileClick={handleTileClick}
+          onBlockedTileClick={handleBlockedTileClick}
         />
       </div>
 
