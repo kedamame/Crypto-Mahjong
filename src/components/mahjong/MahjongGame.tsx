@@ -264,7 +264,7 @@ export function MahjongGame() {
       <div
         style={{
           width: '100%',
-          maxWidth: 420,
+          maxWidth: boardW,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-end',
@@ -320,7 +320,7 @@ export function MahjongGame() {
         <div
           style={{
             width: '100%',
-            maxWidth: 420,
+            maxWidth: boardW,
             backgroundColor: '#c44a1a',
             color: '#ede9df',
             padding: '8px 12px',
@@ -337,26 +337,27 @@ export function MahjongGame() {
       )}
 
       {/* Board */}
-      <div
-        style={{
-          position: 'relative',
-          transformOrigin: 'top center',
-          transform: `scale(${scale})`,
-          marginBottom: scale < 1 ? `${boardH * (scale - 1)}px` : 0,
-        }}
-      >
-        <Board
-          tiles={tiles}
-          selectedUid={selectedUid}
-          hintedUids={hintedUids}
-          flashingUids={flashingUids}
-          onTileClick={handleTileClick}
-          onBlockedTileClick={handleBlockedTileClick}
-        />
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+        <div
+          style={{
+            transformOrigin: 'top center',
+            transform: `scale(${scale})`,
+            marginBottom: scale < 1 ? `${boardH * (scale - 1)}px` : 0,
+          }}
+        >
+          <Board
+            tiles={tiles}
+            selectedUid={selectedUid}
+            hintedUids={hintedUids}
+            flashingUids={flashingUids}
+            onTileClick={handleTileClick}
+            onBlockedTileClick={handleBlockedTileClick}
+          />
+        </div>
       </div>
 
       {/* Controls */}
-      <div style={{ display: 'flex', gap: 8, marginTop: 12, width: '100%', maxWidth: 420 }}>
+      <div style={{ display: 'flex', gap: 8, marginTop: 12, width: '100%', maxWidth: boardW }}>
         {[
           { label: 'HINT',    action: handleHint,               color: '#1a7a4a' },
           { label: 'SHUFFLE', action: handleReshuffle,           color: '#888880' },
