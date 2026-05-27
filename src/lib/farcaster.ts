@@ -81,7 +81,7 @@ export async function shareOnFarcaster(
   const secs = elapsedSec % 60;
   const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
 
-  const modeStr  = mode === 'speed' ? ' [SPEED]' : '';
+  const modeStr  = mode === 'speed' ? ' [SPEED]' : mode === 'hard' ? ' [HARD]' : '';
   const clearStr = clearCount != null
     ? ` That's my ${ordinal(clearCount)} clear on Base.`
     : '';

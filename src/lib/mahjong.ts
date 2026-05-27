@@ -532,6 +532,72 @@ export const SPEED_LAYOUTS: Layout[] = SPEED_LAYOUT_SPECS.map((spec) => ({
   build: () => build(spec.specs),
 }));
 
+// ---- Hard Mode layouts (144 tiles = same tile set as Normal) ----
+// Design goal: 72–89% of tiles are blocked at start — much harder than Normal (~45% blocked).
+// Achieved by repeating the same (col, row) footprint across many consecutive layers,
+// so only the top layer's tiles are accessible until lower layers are uncovered.
+//
+// Layer-safety check (LAYER_TOP=7): min_y = minRow*TILE_H + (LAYER_TOP−maxLayer)*LAYER_DY ≥ 0
+//   CANYON (minRow=3, maxLayer=15): 3×52 + (7−15)×12 = 156 − 96 = 60 ≥ 0 ✓
+//   Others (minRow=2, maxLayer≤11): 2×52 + (7−11)×12 = 104 − 48 = 56 ≥ 0 ✓
+//   Constraint: keep maxLayer ≤ 15 for minRow=3, or ≤ 11 for minRow=2.
+
+const HARD_LAYOUT_SPECS: Array<{ name: string; specs: Spec[] }> = [
+  {
+    // 4×4 solid block stacked 9 layers. Visual: a perfect cube of tiles.
+    // Free at start: 16 (top layer only) = 11%
+    name: 'MONOLITH',
+    specs: Array.from({ length: 9 }, (_, l) => ({ c0: 4, c1: 7, r0: 2, r1: 5, l })),
+  },
+  {
+    // Three-tier narrowing spire: 6×4 base (layers 0-2), 4×4 mid (3-5), 2×2 peak (6-11).
+    // Each tier is fully blocked by the tier above until edge tiles of the transition layer expose.
+    // Free at start: 24 = 17%
+    name: 'SPIRE',
+    specs: [
+      ...Array.from({ length: 3 }, (_, l) => ({ c0: 3, c1: 8, r0: 2, r1: 5, l })),
+      ...Array.from({ length: 3 }, (_, l) => ({ c0: 4, c1: 7, r0: 2, r1: 5, l: l + 3 })),
+      ...Array.from({ length: 6 }, (_, l) => ({ c0: 5, c1: 6, r0: 3, r1: 4, l: l + 6 })),
+    ],
+  },
+  {
+    // Two independent 2×4 pillars (left cols 1-2, right cols 9-10), each 9 layers tall.
+    // Free at start: 16 (8 per pillar top) = 11%
+    // Named TWIN_H to avoid clash with normal-mode TWIN layout.
+    name: 'TWIN_H',
+    specs: [
+      ...Array.from({ length: 9 }, (_, l) => ({ c0: 1, c1: 2, r0: 2, r1: 5, l })),
+      ...Array.from({ length: 9 }, (_, l) => ({ c0: 9, c1: 10, r0: 2, r1: 5, l })),
+    ],
+  },
+  {
+    // Horizontal canyon: 3-deep wide band (cols 1-10) → 4-deep mid band (cols 3-8) → 9-deep core (cols 5-6).
+    // Uses rows 3-4 only (horizontal slab). Free at start: 20 = 14%
+    name: 'CANYON',
+    specs: [
+      ...Array.from({ length: 3 }, (_, l) => ({ c0: 1, c1: 10, r0: 3, r1: 4, l })),
+      ...Array.from({ length: 4 }, (_, l) => ({ c0: 3, c1: 8,  r0: 3, r1: 4, l: l + 3 })),
+      ...Array.from({ length: 9 }, (_, l) => ({ c0: 5, c1: 6,  r0: 3, r1: 4, l: l + 7 })),
+    ],
+  },
+  {
+    // Volcano: single wide base (cols 1-10, rows 2-5), 3 mid-ring layers (cols 3-8), then 8-layer deep core.
+    // The volcanic rim (mid-ring edges) is exposed; the central shaft is nearly inaccessible until rim cleared.
+    // Free at start: 40 = 28%
+    name: 'VOLCANO',
+    specs: [
+      { c0: 1, c1: 10, r0: 2, r1: 5, l: 0 },
+      ...Array.from({ length: 3 }, (_, l) => ({ c0: 3, c1: 8, r0: 2, r1: 5, l: l + 1 })),
+      ...Array.from({ length: 8 }, (_, l) => ({ c0: 5, c1: 6, r0: 3, r1: 4, l: l + 4 })),
+    ],
+  },
+];
+
+export const HARD_LAYOUTS: Layout[] = HARD_LAYOUT_SPECS.map((spec) => ({
+  name: spec.name,
+  build: () => build(spec.specs),
+}));
+
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -541,7 +607,7 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export type GameMode = 'normal' | 'speed';
+export type GameMode = 'normal' | 'speed' | 'hard';
 
 export function dealNewGame(options?: { mode?: GameMode; layoutIndex?: number }): {
   tiles: GameTile[];
@@ -549,7 +615,7 @@ export function dealNewGame(options?: { mode?: GameMode; layoutIndex?: number })
   totalPairs: number;
 } {
   const mode = options?.mode ?? 'normal';
-  const allLayouts = mode === 'speed' ? SPEED_LAYOUTS : LAYOUTS;
+  const allLayouts = mode === 'speed' ? SPEED_LAYOUTS : mode === 'hard' ? HARD_LAYOUTS : LAYOUTS;
   const idx =
     options?.layoutIndex !== undefined
       ? options.layoutIndex % allLayouts.length

@@ -190,6 +190,7 @@ export function MahjongGame() {
 
   const remaining = tiles.filter((t) => !t.removed).length;
   const isSpeed = mode === 'speed';
+  const isHard  = mode === 'hard';
   const boardW = actualBoardW;
   const boardH = actualBoardH;
 
@@ -235,7 +236,7 @@ export function MahjongGame() {
               NORMAL
             </div>
             <div style={{ fontSize: 9, color: '#888880', fontFamily: 'Courier New, monospace', marginTop: 6, letterSpacing: 1 }}>
-              144 tiles / 13 layouts / deep stacks
+              144 tiles / 20 layouts / deep stacks
             </div>
           </button>
 
@@ -256,7 +257,28 @@ export function MahjongGame() {
               SPEED
             </div>
             <div style={{ fontSize: 9, color: '#b0c4ff', fontFamily: 'Courier New, monospace', marginTop: 6, letterSpacing: 1 }}>
-              72 tiles / 5 layouts / shallow / easy clear
+              72 tiles / 8 layouts / shallow / easy clear
+            </div>
+          </button>
+
+          {/* Hard */}
+          <button
+            onClick={() => selectMode('hard')}
+            style={{
+              backgroundColor: '#c44a1a',
+              border: 'none',
+              color: '#ede9df',
+              padding: '20px 16px',
+              cursor: 'pointer',
+              textAlign: 'left',
+              boxShadow: '4px 4px 0 #7a2000',
+            }}
+          >
+            <div style={{ fontSize: 16, fontWeight: 900, fontFamily: 'Courier New, monospace', letterSpacing: 2 }}>
+              HARD
+            </div>
+            <div style={{ fontSize: 9, color: '#ffb89a', fontFamily: 'Courier New, monospace', marginTop: 6, letterSpacing: 1 }}>
+              144 tiles / 5 layouts / 72-89% blocked at start
             </div>
           </button>
         </div>
@@ -299,6 +321,11 @@ export function MahjongGame() {
             {isSpeed && (
               <div style={{ fontSize: 7, letterSpacing: 2, color: '#ede9df', backgroundColor: '#3558c8', padding: '1px 4px', fontFamily: 'Courier New, monospace', fontWeight: 700 }}>
                 SPEED
+              </div>
+            )}
+            {isHard && (
+              <div style={{ fontSize: 7, letterSpacing: 2, color: '#ede9df', backgroundColor: '#c44a1a', padding: '1px 4px', fontFamily: 'Courier New, monospace', fontWeight: 700 }}>
+                HARD
               </div>
             )}
             {layoutName && (
