@@ -13,7 +13,7 @@ export const MAHJONG_ABI = [
     name: 'recordClear',
     type: 'function',
     stateMutability: 'nonpayable',
-    inputs: [],
+    inputs: [{ name: 'shuffleCount', type: 'uint256' }],
     outputs: [],
   },
   {
@@ -24,11 +24,19 @@ export const MAHJONG_ABI = [
     outputs: [{ name: '', type: 'uint256' }],
   },
   {
+    name: 'totalShuffles',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'player', type: 'address' }],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+  {
     name: 'ClearRecorded',
     type: 'event',
     inputs: [
-      { name: 'player', type: 'address', indexed: true },
-      { name: 'totalClears', type: 'uint256', indexed: false },
+      { name: 'player',           type: 'address', indexed: true  },
+      { name: 'totalClears',      type: 'uint256', indexed: false },
+      { name: 'shufflesThisGame', type: 'uint256', indexed: false },
     ],
   },
 ] as const;

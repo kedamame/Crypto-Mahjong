@@ -35,6 +35,7 @@ export function MahjongGame() {
   const [won, setWon] = useState(false);
   const [deadlocked, setDeadlocked] = useState(false);
   const [finalElapsed, setFinalElapsed] = useState(0);
+  const [shuffleCount, setShuffleCount] = useState(0);
   const [flashingUids, setFlashingUids] = useState<Set<number>>(new Set());
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -75,6 +76,7 @@ export function MahjongGame() {
     setWon(false);
     setDeadlocked(false);
     setFinalElapsed(0);
+    setShuffleCount(0);
     if (timerRef.current) clearInterval(timerRef.current);
   }, [mode]);
 
@@ -155,6 +157,7 @@ export function MahjongGame() {
     setSelectedUid(null);
     setHintedUids(new Set());
     setDeadlocked(false);
+    setShuffleCount((c) => c + 1);
   }
 
   // --- Scale to fit viewport ---
@@ -390,6 +393,7 @@ export function MahjongGame() {
         <WinModal
           elapsedSec={finalElapsed}
           pairsMatched={pairsMatched}
+          shuffleCount={shuffleCount}
           clearCount={clearCount}
           onNewGame={() => startNewGame()}
           onClearRecorded={() => {

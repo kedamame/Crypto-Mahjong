@@ -1,26 +1,34 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import {
+  useAccount, useConnect, useWriteContract,
+  useWaitForTransactionReceipt, useChainId, useSwitchChain,
+} from 'wagmi';
+import { base } from 'wagmi/chains';
 import { MAHJONG_CONTRACT_ADDRESS, MAHJONG_ABI, isContractConfigured } from '@/lib/contract';
 import { shareOnFarcaster } from '@/lib/farcaster';
 
 interface WinModalProps {
   elapsedSec: number;
   pairsMatched: number;
+  shuffleCount: number;
   clearCount: number | null;
   onNewGame: () => void;
   onClearRecorded: () => void;
 }
 
-export function WinModal({ elapsedSec, pairsMatched, clearCount, onNewGame, onClearRecorded }: WinModalProps) {
+export function WinModal({ elapsedSec, pairsMatched, shuffleCount, clearCount, onNewGame, onClearRecorded }: WinModalProps) {
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
+  const chainId = useChainId();
+  const { switchChainAsync } = useSwitchChain();
   const { writeContract, data: txHash, isPending: isTxPending, error: txError } = useWriteContract();
   const { isLoading: isTxConfirming, isSuccess: isTxSuccess } =
     useWaitForTransactionReceipt({ hash: txHash });
 
   const [shared, setShared] = useState(false);
+  const [isSwitching, setIsSwitching] = useState(false);
   const notifiedRef = useRef(false);
 
   const mins = Math.floor(elapsedSec / 60);
@@ -35,11 +43,23 @@ export function WinModal({ elapsedSec, pairsMatched, clearCount, onNewGame, onCl
     }
   }, [isTxSuccess, onClearRecorded]);
 
-  function handleRecord() {
+  async function handleRecord() {
+    // Switch to Base if needed
+    if (chainId !== base.id) {
+      setIsSwitching(true);
+      try {
+        await switchChainAsync({ chainId: base.id });
+      } catch {
+        setIsSwitching(false);
+        return; // user rejected the chain switch
+      }
+      setIsSwitching(false);
+    }
     writeContract({
       address: MAHJONG_CONTRACT_ADDRESS,
       abi: MAHJONG_ABI,
       functionName: 'recordClear',
+      args: [BigInt(shuffleCount)],
     });
   }
 
@@ -48,6 +68,13 @@ export function WinModal({ elapsedSec, pairsMatched, clearCount, onNewGame, onCl
     await shareOnFarcaster(count, elapsedSec);
     setShared(true);
   }
+
+  const isBusy = isSwitching || isTxPending || isTxConfirming;
+  const recordLabel = isSwitching
+    ? 'SWITCHING TO BASE...'
+    : isTxPending || isTxConfirming
+      ? 'RECORDING...'
+      : 'RECORD ON BASE';
 
   return (
     <div
@@ -83,19 +110,23 @@ export function WinModal({ elapsedSec, pairsMatched, clearCount, onNewGame, onCl
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'flex', gap: 24, marginTop: 20, marginBottom: 24 }}>
+        <div style={{ display: 'flex', gap: 20, marginTop: 20, marginBottom: 24, flexWrap: 'nowrap' }}>
           <div>
             <div style={{ fontSize: 9, letterSpacing: 2, color: '#888880', fontFamily: 'Courier New, monospace' }}>TIME</div>
-            <div style={{ fontSize: 28, fontWeight: 900, color: '#3558c8', fontFamily: 'Courier New, monospace' }}>{timeStr}</div>
+            <div style={{ fontSize: 26, fontWeight: 900, color: '#3558c8', fontFamily: 'Courier New, monospace' }}>{timeStr}</div>
           </div>
           <div>
             <div style={{ fontSize: 9, letterSpacing: 2, color: '#888880', fontFamily: 'Courier New, monospace' }}>PAIRS</div>
-            <div style={{ fontSize: 28, fontWeight: 900, color: '#141410', fontFamily: 'Courier New, monospace' }}>{pairsMatched}</div>
+            <div style={{ fontSize: 26, fontWeight: 900, color: '#141410', fontFamily: 'Courier New, monospace' }}>{pairsMatched}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 9, letterSpacing: 2, color: '#888880', fontFamily: 'Courier New, monospace' }}>SHUFFLE</div>
+            <div style={{ fontSize: 26, fontWeight: 900, color: '#888880', fontFamily: 'Courier New, monospace' }}>{shuffleCount}</div>
           </div>
           {clearCount !== null && (
             <div>
               <div style={{ fontSize: 9, letterSpacing: 2, color: '#888880', fontFamily: 'Courier New, monospace' }}>CLEARS</div>
-              <div style={{ fontSize: 28, fontWeight: 900, color: '#1a7a4a', fontFamily: 'Courier New, monospace' }}>{clearCount}</div>
+              <div style={{ fontSize: 26, fontWeight: 900, color: '#1a7a4a', fontFamily: 'Courier New, monospace' }}>{clearCount}</div>
             </div>
           )}
         </div>
@@ -117,10 +148,10 @@ export function WinModal({ elapsedSec, pairsMatched, clearCount, onNewGame, onCl
             ) : (
               <button
                 onClick={handleRecord}
-                disabled={isTxPending || isTxConfirming}
+                disabled={isBusy}
                 style={btnStyle('#3558c8', '#fff')}
               >
-                {isTxPending || isTxConfirming ? 'RECORDING...' : 'RECORD ON BASE'}
+                {recordLabel}
               </button>
             )}
             {txError && (
