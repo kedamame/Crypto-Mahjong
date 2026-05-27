@@ -49,7 +49,8 @@
       "PowerShell(\"Done\")",
       "Bash(curl -s -o \"c:\\\\Users\\\\kaexr\\\\Desktop\\\\Baseapp\\\\new-miniapp\\\\public\\\\og-image.png\" \"http://localhost:3000/og-image.png\")",
       "Bash(git commit -m 'feat: center board on screen — centering wrapper + unified maxWidth *)",
-      "Bash(git commit -m 'fix: board centering — explicit width on transform div, rely on alignItems:center *)"
+      "Bash(git commit -m 'fix: board centering — explicit width on transform div, rely on alignItems:center *)",
+      "Bash(git commit -m 'feat: add accountAssociation to farcaster.json *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\kaexr\\Desktop\\Baseapp\\new-miniapp\\src\\app\\.well-known"
