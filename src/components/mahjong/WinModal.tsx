@@ -1,13 +1,25 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import {
-  useAccount, useConnect, useWriteContract,
-  useWaitForTransactionReceipt, useChainId, useSwitchChain,
-} from 'wagmi';
+import { useAccount, useConnect, useWaitForTransactionReceipt } from 'wagmi';
 import { base } from 'wagmi/chains';
+import { encodeFunctionData } from 'viem';
 import { MAHJONG_CONTRACT_ADDRESS, MAHJONG_ABI, isContractConfigured } from '@/lib/contract';
 import { shareOnFarcaster } from '@/lib/farcaster';
+
+// Raw EIP-1193 provider type (works with Rabby / EIP-6963 wallets)
+type EthProvider = {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+};
+
+// Chain parameters for adding Base if wallet doesn't have it
+const BASE_CHAIN_PARAMS = {
+  chainId: '0x2105',
+  chainName: 'Base',
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  rpcUrls: ['https://mainnet.base.org'],
+  blockExplorerUrls: ['https://basescan.org'],
+};
 
 interface WinModalProps {
   elapsedSec: number;
@@ -19,23 +31,24 @@ interface WinModalProps {
 }
 
 export function WinModal({ elapsedSec, pairsMatched, shuffleCount, clearCount, onNewGame, onClearRecorded }: WinModalProps) {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, connector } = useAccount();
   const { connect, connectors } = useConnect();
-  const chainId = useChainId();
-  const { switchChainAsync } = useSwitchChain();
-  const { writeContract, data: txHash, isPending: isTxPending, error: txError } = useWriteContract();
+
+  const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined);
+  const [isSwitching, setIsSwitching] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [txError, setTxError] = useState<string | null>(null);
+  const [shared, setShared] = useState(false);
+  const notifiedRef = useRef(false);
+
   const { isLoading: isTxConfirming, isSuccess: isTxSuccess } =
     useWaitForTransactionReceipt({ hash: txHash });
-
-  const [shared, setShared] = useState(false);
-  const [isSwitching, setIsSwitching] = useState(false);
-  const notifiedRef = useRef(false);
 
   const mins = Math.floor(elapsedSec / 60);
   const secs = elapsedSec % 60;
   const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
 
-  // Notify parent exactly once when tx succeeds
+  // Notify parent exactly once when tx is confirmed
   useEffect(() => {
     if (isTxSuccess && !notifiedRef.current) {
       notifiedRef.current = true;
@@ -44,23 +57,63 @@ export function WinModal({ elapsedSec, pairsMatched, shuffleCount, clearCount, o
   }, [isTxSuccess, onClearRecorded]);
 
   async function handleRecord() {
-    // Switch to Base if needed
-    if (chainId !== base.id) {
-      setIsSwitching(true);
-      try {
-        await switchChainAsync({ chainId: base.id });
-      } catch {
-        setIsSwitching(false);
-        return; // user rejected the chain switch
+    if (!connector || !address) return;
+    setTxError(null);
+
+    // ① Get raw EIP-1193 provider
+    //    wagmi's useChainId() always returns the wagmi-configured chain (Base), so it
+    //    cannot detect the wallet's *actual* chain — must check via provider directly.
+    //    EIP-6963 wallets like Rabby also don't expose via window.ethereum.
+    const provider = await connector.getProvider() as EthProvider;
+
+    // ② Check & switch chain
+    setIsSwitching(true);
+    try {
+      const chainHex = await provider.request({ method: 'eth_chainId' }) as string;
+      if (parseInt(chainHex, 16) !== base.id) {
+        try {
+          await provider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x2105' }],
+          });
+        } catch (err) {
+          if ((err as { code?: number }).code === 4902) {
+            // Base not registered in wallet — add it first
+            await provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [BASE_CHAIN_PARAMS],
+            });
+          } else {
+            setIsSwitching(false);
+            return; // user rejected
+          }
+        }
       }
+    } catch (err) {
+      setTxError((err as Error).message?.slice(0, 80) ?? 'Chain switch failed');
       setIsSwitching(false);
+      return;
     }
-    writeContract({
-      address: MAHJONG_CONTRACT_ADDRESS,
-      abi: MAHJONG_ABI,
-      functionName: 'recordClear',
-      args: [BigInt(shuffleCount)],
-    });
+    setIsSwitching(false);
+
+    // ③ Encode calldata and send directly via provider
+    setIsSending(true);
+    try {
+      const data = encodeFunctionData({
+        abi: MAHJONG_ABI,
+        functionName: 'recordClear',
+        args: [BigInt(shuffleCount)],
+      });
+      const hash = await provider.request({
+        method: 'eth_sendTransaction',
+        params: [{ from: address, to: MAHJONG_CONTRACT_ADDRESS, data }],
+      }) as `0x${string}`;
+      setTxHash(hash);
+    } catch (err) {
+      setTxError((err as Error).message?.slice(0, 80) ?? 'Transaction failed');
+    } finally {
+      setIsSending(false);
+    }
   }
 
   async function handleShare() {
@@ -69,10 +122,10 @@ export function WinModal({ elapsedSec, pairsMatched, shuffleCount, clearCount, o
     setShared(true);
   }
 
-  const isBusy = isSwitching || isTxPending || isTxConfirming;
+  const isBusy = isSwitching || isSending || isTxConfirming;
   const recordLabel = isSwitching
     ? 'SWITCHING TO BASE...'
-    : isTxPending || isTxConfirming
+    : isSending || isTxConfirming
       ? 'RECORDING...'
       : 'RECORD ON BASE';
 
@@ -156,7 +209,7 @@ export function WinModal({ elapsedSec, pairsMatched, shuffleCount, clearCount, o
             )}
             {txError && (
               <div style={{ fontSize: 10, color: '#c44a1a', marginTop: 4, fontFamily: 'Courier New, monospace' }}>
-                {txError.message.slice(0, 60)}
+                {txError}
               </div>
             )}
           </div>
