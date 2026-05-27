@@ -9,6 +9,10 @@ function ordinal(n: number): string {
   return n + (s[(v - 20) % 10] ?? s[v] ?? s[0]);
 }
 
+// 900x600 = 3:2 — matches fc:miniapp imageUrl display ratio in Farcaster clients
+const W = 900;
+const H = 600;
+
 function OgTile({
   label,
   color,
@@ -30,14 +34,14 @@ function OgTile({
         top: y,
         display: 'flex',
         flexDirection: 'column',
-        width: 78,
-        height: 106,
+        width: 68,
+        height: 94,
         backgroundColor: '#f5f0e8',
         border: '3px solid #141410',
         transform: `rotate(${rotate}deg)`,
       }}
     >
-      <div style={{ display: 'flex', height: 8, backgroundColor: color }} />
+      <div style={{ display: 'flex', height: 7, backgroundColor: color }} />
       <div
         style={{
           display: 'flex',
@@ -50,9 +54,9 @@ function OgTile({
         <div
           style={{
             display: 'flex',
-            width: 44,
-            height: 44,
-            borderRadius: 22,
+            width: 38,
+            height: 38,
+            borderRadius: 19,
             backgroundColor: color,
             alignItems: 'center',
             justifyContent: 'center',
@@ -62,7 +66,7 @@ function OgTile({
             style={{
               display: 'flex',
               color: '#fff',
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: 900,
               fontFamily: 'monospace',
             }}
@@ -73,11 +77,11 @@ function OgTile({
         <div
           style={{
             display: 'flex',
-            fontSize: label.length > 4 ? 8 : 11,
+            fontSize: label.length > 4 ? 7 : 9,
             fontWeight: 700,
             color: '#444440',
             fontFamily: 'monospace',
-            marginTop: 5,
+            marginTop: 4,
             whiteSpace: 'nowrap',
           }}
         >
@@ -99,17 +103,17 @@ export async function GET(req: NextRequest) {
   const secs    = elapsed % 60;
   const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
 
-  const isSpeed  = mode === 'speed';
-  const modeBg   = isSpeed ? '#3558c8' : '#141410';
+  const isSpeed = mode === 'speed';
+  const modeBg  = isSpeed ? '#3558c8' : '#141410';
 
   const tiles = [
-    { label: 'BTC',   color: '#f7931a', x: 760,  y: 38,  rotate: -10 },
-    { label: 'ETH',   color: '#627eea', x: 970,  y: 20,  rotate: 6   },
-    { label: 'BASE',  color: '#3558c8', x: 1090, y: 100, rotate: 12  },
-    { label: 'SOL',   color: '#9945ff', x: 780,  y: 240, rotate: -7  },
-    { label: 'DEGEN', color: '#141410', x: 1010, y: 210, rotate: -4  },
-    { label: 'UNI',   color: '#ff007a', x: 820,  y: 430, rotate: 8   },
-    { label: 'ARB',   color: '#28a0f0', x: 1060, y: 390, rotate: -12 },
+    { label: 'BTC',   color: '#f7931a', x: 556, y: 18,  rotate: -10 },
+    { label: 'ETH',   color: '#627eea', x: 726, y: 10,  rotate: 6   },
+    { label: 'BASE',  color: '#3558c8', x: 820, y: 88,  rotate: 12  },
+    { label: 'SOL',   color: '#9945ff', x: 568, y: 210, rotate: -7  },
+    { label: 'DEGEN', color: '#141410', x: 758, y: 188, rotate: -4  },
+    { label: 'UNI',   color: '#ff007a', x: 590, y: 388, rotate: 8   },
+    { label: 'ARB',   color: '#28a0f0', x: 800, y: 350, rotate: -12 },
   ];
 
   return new ImageResponse(
@@ -133,9 +137,9 @@ export async function GET(req: NextRequest) {
         <div
           style={{
             position: 'absolute',
-            left: 700,
-            top: 40,
-            bottom: 40,
+            left: 530,
+            top: 36,
+            bottom: 36,
             width: 1,
             backgroundColor: '#d0ccc0',
             display: 'flex',
@@ -146,10 +150,10 @@ export async function GET(req: NextRequest) {
         <div
           style={{
             position: 'absolute',
-            left: 60,
+            left: 48,
             top: 0,
             bottom: 0,
-            width: 620,
+            width: 464,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
@@ -160,17 +164,17 @@ export async function GET(req: NextRequest) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              marginBottom: 18,
+              marginBottom: 16,
             }}
           >
             <div
               style={{
                 display: 'flex',
-                fontSize: 12,
+                fontSize: 11,
                 letterSpacing: 4,
                 color: '#888880',
                 fontFamily: 'monospace',
-                marginRight: 14,
+                marginRight: 12,
                 whiteSpace: 'nowrap',
               }}
             >
@@ -181,14 +185,14 @@ export async function GET(req: NextRequest) {
                 display: 'flex',
                 backgroundColor: modeBg,
                 color: '#ede9df',
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: 700,
                 letterSpacing: 3,
                 fontFamily: 'monospace',
-                paddingTop: 4,
-                paddingBottom: 4,
-                paddingLeft: 10,
-                paddingRight: 10,
+                paddingTop: 3,
+                paddingBottom: 3,
+                paddingLeft: 8,
+                paddingRight: 8,
                 whiteSpace: 'nowrap',
               }}
             >
@@ -200,7 +204,7 @@ export async function GET(req: NextRequest) {
           <div
             style={{
               display: 'flex',
-              fontSize: 108,
+              fontSize: 88,
               fontWeight: 900,
               color: '#141410',
               lineHeight: 0.88,
@@ -214,13 +218,13 @@ export async function GET(req: NextRequest) {
           <div
             style={{
               display: 'flex',
-              fontSize: 108,
+              fontSize: 88,
               fontWeight: 900,
               color: '#141410',
               lineHeight: 0.88,
               fontFamily: 'monospace',
               letterSpacing: -2,
-              marginBottom: 44,
+              marginBottom: 36,
               whiteSpace: 'nowrap',
             }}
           >
@@ -228,13 +232,13 @@ export async function GET(req: NextRequest) {
           </div>
 
           {/* Stats row */}
-          <div style={{ display: 'flex', gap: 48 }}>
+          <div style={{ display: 'flex', gap: 36 }}>
             {/* TIME */}
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <div
                 style={{
                   display: 'flex',
-                  fontSize: 10,
+                  fontSize: 9,
                   letterSpacing: 3,
                   color: '#888880',
                   fontFamily: 'monospace',
@@ -246,7 +250,7 @@ export async function GET(req: NextRequest) {
               <div
                 style={{
                   display: 'flex',
-                  fontSize: 38,
+                  fontSize: 32,
                   fontWeight: 900,
                   color: '#3558c8',
                   fontFamily: 'monospace',
@@ -263,7 +267,7 @@ export async function GET(req: NextRequest) {
                 <div
                   style={{
                     display: 'flex',
-                    fontSize: 10,
+                    fontSize: 9,
                     letterSpacing: 3,
                     color: '#888880',
                     fontFamily: 'monospace',
@@ -275,7 +279,7 @@ export async function GET(req: NextRequest) {
                 <div
                   style={{
                     display: 'flex',
-                    fontSize: 38,
+                    fontSize: 32,
                     fontWeight: 900,
                     color: '#1a7a4a',
                     fontFamily: 'monospace',
@@ -292,7 +296,7 @@ export async function GET(req: NextRequest) {
               <div
                 style={{
                   display: 'flex',
-                  fontSize: 10,
+                  fontSize: 9,
                   letterSpacing: 3,
                   color: '#888880',
                   fontFamily: 'monospace',
@@ -304,7 +308,7 @@ export async function GET(req: NextRequest) {
               <div
                 style={{
                   display: 'flex',
-                  fontSize: 38,
+                  fontSize: 32,
                   fontWeight: 900,
                   color: '#888880',
                   fontFamily: 'monospace',
@@ -316,14 +320,14 @@ export async function GET(req: NextRequest) {
           </div>
         </div>
 
-        {/* App credit — bottom right */}
+        {/* App credit */}
         <div
           style={{
             position: 'absolute',
-            right: 40,
-            bottom: 22,
+            right: 32,
+            bottom: 18,
             display: 'flex',
-            fontSize: 10,
+            fontSize: 9,
             letterSpacing: 3,
             color: '#888880',
             fontFamily: 'monospace',
@@ -347,6 +351,6 @@ export async function GET(req: NextRequest) {
         />
       </div>
     ),
-    { width: 1200, height: 630 },
+    { width: W, height: H },
   );
 }
