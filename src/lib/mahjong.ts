@@ -310,6 +310,115 @@ const LAYOUT_SPECS: Array<{ name: string; specs: Spec[] }> = [
       { c0:5, c1:6,  r0:3, r1:4, l:5 },
     ],
   },
+  {
+    // Smooth 7-layer centred pyramid
+    // L0:12×6=72  L1:10×4=40  L2:6×2=12  L3:4×2=8  L4-L6:2×2=4 each  → 144
+    name: 'PAGODA',
+    specs: [
+      { c0:0,  c1:11, r0:1, r1:6, l:0 },
+      { c0:1,  c1:10, r0:2, r1:5, l:1 },
+      { c0:3,  c1:8,  r0:3, r1:4, l:2 },
+      { c0:4,  c1:7,  r0:3, r1:4, l:3 },
+      { c0:5,  c1:6,  r0:3, r1:4, l:4 },
+      { c0:5,  c1:6,  r0:3, r1:4, l:5 },
+      { c0:5,  c1:6,  r0:3, r1:4, l:6 },
+    ],
+  },
+  {
+    // Two separate towers with deep centre stacks, gap in the middle
+    // L0:5×8×2=80  L1:3×4×2=24  L2-L6:2×2×2=8 each  → 80+24+40=144
+    name: 'TWIN',
+    specs: [
+      { c0:0,  c1:4,  r0:0, r1:7, l:0 },
+      { c0:7,  c1:11, r0:0, r1:7, l:0 },
+      { c0:1,  c1:3,  r0:2, r1:5, l:1 },
+      { c0:8,  c1:10, r0:2, r1:5, l:1 },
+      { c0:1,  c1:2,  r0:3, r1:4, l:2 },
+      { c0:9,  c1:10, r0:3, r1:4, l:2 },
+      { c0:1,  c1:2,  r0:3, r1:4, l:3 },
+      { c0:9,  c1:10, r0:3, r1:4, l:3 },
+      { c0:1,  c1:2,  r0:3, r1:4, l:4 },
+      { c0:9,  c1:10, r0:3, r1:4, l:4 },
+      { c0:1,  c1:2,  r0:3, r1:4, l:5 },
+      { c0:9,  c1:10, r0:3, r1:4, l:5 },
+      { c0:1,  c1:2,  r0:3, r1:4, l:6 },
+      { c0:9,  c1:10, r0:3, r1:4, l:6 },
+    ],
+  },
+  {
+    // Two parallel horizontal bars, each stacked 3 levels tall, gap in the middle
+    // L0:12×3×2=72  L1:8×3×2=48  L2:4×3×2=24  → 144
+    name: 'DOUBLE',
+    specs: [
+      { c0:0,  c1:11, r0:0, r1:2, l:0 },
+      { c0:0,  c1:11, r0:5, r1:7, l:0 },
+      { c0:2,  c1:9,  r0:0, r1:2, l:1 },
+      { c0:2,  c1:9,  r0:5, r1:7, l:1 },
+      { c0:4,  c1:7,  r0:0, r1:2, l:2 },
+      { c0:4,  c1:7,  r0:5, r1:7, l:2 },
+    ],
+  },
+  {
+    // Right-pointing arrow silhouette (tapers left, wide right) + tall centre stack
+    // L0 rows unique: r0=72  L1:8×4=32  L2:4×4=16  L3:4×2=8  L4-L7:2×2=4 each  → 144
+    name: 'ARROW',
+    specs: [
+      { c0:0,  c1:11, r0:3, r1:4, l:0 },   // full centre rows
+      { c0:2,  c1:11, r0:2, r1:2, l:0 },   // row 2
+      { c0:2,  c1:11, r0:5, r1:5, l:0 },   // row 5
+      { c0:4,  c1:11, r0:1, r1:1, l:0 },   // row 1
+      { c0:4,  c1:11, r0:6, r1:6, l:0 },   // row 6
+      { c0:6,  c1:11, r0:0, r1:0, l:0 },   // row 0
+      { c0:6,  c1:11, r0:7, r1:7, l:0 },   // row 7
+      { c0:2,  c1:9,  r0:2, r1:5, l:1 },
+      { c0:4,  c1:7,  r0:2, r1:5, l:2 },
+      { c0:4,  c1:7,  r0:3, r1:4, l:3 },
+      { c0:5,  c1:6,  r0:3, r1:4, l:4 },
+      { c0:5,  c1:6,  r0:3, r1:4, l:5 },
+      { c0:5,  c1:6,  r0:3, r1:4, l:6 },
+      { c0:5,  c1:6,  r0:3, r1:4, l:7 },
+    ],
+  },
+  {
+    // Full base; raised bands at all 4 corners create challenging corner stacks
+    // L0:12×8=96  L1:4×2×4corners=32  L2:2×2×4corners=16  → 144
+    name: 'CORNERS',
+    specs: [
+      { c0:0,  c1:11, r0:0, r1:7, l:0 },
+      { c0:0,  c1:3,  r0:0, r1:1, l:1 },   // top-left band
+      { c0:8,  c1:11, r0:0, r1:1, l:1 },   // top-right band
+      { c0:0,  c1:3,  r0:6, r1:7, l:1 },   // bottom-left band
+      { c0:8,  c1:11, r0:6, r1:7, l:1 },   // bottom-right band
+      { c0:0,  c1:1,  r0:0, r1:1, l:2 },   // TL peak
+      { c0:10, c1:11, r0:0, r1:1, l:2 },   // TR peak
+      { c0:0,  c1:1,  r0:6, r1:7, l:2 },   // BL peak
+      { c0:10, c1:11, r0:6, r1:7, l:2 },   // BR peak
+    ],
+  },
+  {
+    // Two thick horizontal streams + small centre bridge; outer edges stack tallest
+    // L0:12×3×2+4×2=80  L1:12×2×2=48  L2:8×1×2=16  → 144
+    name: 'RIVER',
+    specs: [
+      { c0:0,  c1:11, r0:0, r1:2, l:0 },   // top stream
+      { c0:0,  c1:11, r0:5, r1:7, l:0 },   // bottom stream
+      { c0:4,  c1:7,  r0:3, r1:4, l:0 },   // centre bridge
+      { c0:0,  c1:11, r0:0, r1:1, l:1 },   // upper 2 rows of top stream
+      { c0:0,  c1:11, r0:6, r1:7, l:1 },   // lower 2 rows of bottom stream
+      { c0:2,  c1:9,  r0:0, r1:0, l:2 },   // top edge peak
+      { c0:2,  c1:9,  r0:7, r1:7, l:2 },   // bottom edge peak
+    ],
+  },
+  {
+    // Full base; L1 left-shifted, L2 further left  → asymmetric mountain peak
+    // L0:12×8=96  L1:8×4=32  L2:4×4=16  → 144
+    name: 'MESA',
+    specs: [
+      { c0:0,  c1:11, r0:0, r1:7, l:0 },
+      { c0:1,  c1:8,  r0:2, r1:5, l:1 },
+      { c0:2,  c1:5,  r0:2, r1:5, l:2 },
+    ],
+  },
 ];
 
 export const LAYOUTS: Layout[] = LAYOUT_SPECS.map((spec) => ({
@@ -376,6 +485,44 @@ const SPEED_LAYOUT_SPECS: Array<{ name: string; specs: Spec[] }> = [
       { c0:3, c1:4, r0:5, r1:5, l:2 }, //  2
       // L3: center
       { c0:3, c1:4, r0:3, r1:4, l:3 }, //  4
+    ],
+  },
+  {
+    // Diamond silhouette: wide centre band, tapered top/bottom + centre stack
+    // L0:8×4+6×2×2=56  L1:4×4=16  → 72
+    name: 'DIAMOND',
+    specs: [
+      { c0:0, c1:7, r0:2, r1:5, l:0 }, // wide centre  32
+      { c0:1, c1:6, r0:0, r1:1, l:0 }, // upper taper  12
+      { c0:1, c1:6, r0:6, r1:7, l:0 }, // lower taper  12
+      { c0:2, c1:5, r0:2, r1:5, l:1 }, // centre stack 16
+    ],
+  },
+  {
+    // Two separate mini-towers, gap at c3-c4
+    // L0:3×8×2=48  L1:2×4×2=16  L2:2×2×2=8  → 72
+    name: 'TWIN',
+    specs: [
+      { c0:0, c1:2, r0:0, r1:7, l:0 }, // left tower  24
+      { c0:5, c1:7, r0:0, r1:7, l:0 }, // right tower 24
+      { c0:0, c1:1, r0:2, r1:5, l:1 }, // left inner   8
+      { c0:6, c1:7, r0:2, r1:5, l:1 }, // right inner  8
+      { c0:0, c1:1, r0:3, r1:4, l:2 }, // left peak    4
+      { c0:6, c1:7, r0:3, r1:4, l:2 }, // right peak   4
+    ],
+  },
+  {
+    // Right-pointing arrow in 8-col grid + centre stack
+    // L0:rows unique=48  L1:4×4=16  L2:2×4=8  → 72
+    name: 'ARROW',
+    specs: [
+      { c0:0, c1:7, r0:3, r1:4, l:0 }, // full centre rows 16
+      { c0:2, c1:7, r0:1, r1:2, l:0 }, // upper taper     12
+      { c0:2, c1:7, r0:5, r1:6, l:0 }, // lower taper     12
+      { c0:4, c1:7, r0:0, r1:0, l:0 }, // top tip          4
+      { c0:4, c1:7, r0:7, r1:7, l:0 }, // bottom tip       4
+      { c0:2, c1:5, r0:2, r1:5, l:1 }, // centre stack    16
+      { c0:3, c1:4, r0:2, r1:5, l:2 }, // top stack        8
     ],
   },
 ];
