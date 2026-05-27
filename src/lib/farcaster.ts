@@ -91,8 +91,10 @@ export async function shareOnFarcaster(
   const clears   = clearCount ?? 0;
   const shareUrl = `${APP_URL}/share?mode=${mode}&elapsed=${elapsedSec}&clears=${clears}&shuffles=${shuffleCount}`;
 
-  const composeUrl =
-    `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}&embeds[0]=${encodeURIComponent(shareUrl)}`;
-
-  await sdk.actions.openUrl(composeUrl);
+  // composeCast is the correct SDK method for sharing with embeds from a miniapp.
+  // openUrl + Warpcast compose URL does not reliably pass embeds[0] inside miniapp context.
+  await sdk.actions.composeCast({
+    text,
+    embeds: [shareUrl],
+  });
 }

@@ -54,6 +54,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
       url: APP_URL,
     },
     other: {
+      // fc:miniapp — used by Farcaster to render the rich miniapp embed card
       'fc:miniapp': JSON.stringify(miniAppEmbed),
     },
   };
