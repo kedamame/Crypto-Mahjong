@@ -511,9 +511,13 @@ export function tilePixelPos(tile: GameTile): { x: number; y: number; z: number 
   };
 }
 
-// Accommodate widest layout (cols 0-11) + layer diagonal offset + tile width
-export const BOARD_W = 12 * TILE_W + LAYER_TOP * LAYER_DX + TILE_W;
+// Board width formula:
+//   last-col-start = (num_cols - 1) * TILE_W
+//   + max-layer diagonal shift
+//   + tile body (TILE_W-2) + shadow (4) + buffer (4) = TILE_W + 6
+export const BOARD_W = 11 * TILE_W + LAYER_TOP * LAYER_DX + TILE_W + 6;   // cols 0-11 → 504px
 export const BOARD_H = 8 * TILE_H + LAYER_TOP * LAYER_DY + TILE_H;
-// Speed layouts use cols 0-7, max layer 3 → narrower board fits miniapp viewport
+// Speed layouts: cols 0-7, max layer 3
 const SPEED_MAX_LAYER = 3;
-export const SPEED_BOARD_W = 8 * TILE_W + SPEED_MAX_LAYER * LAYER_DX + TILE_W;
+const SPEED_MAX_COLS  = 8;
+export const SPEED_BOARD_W = (SPEED_MAX_COLS - 1) * TILE_W + SPEED_MAX_LAYER * LAYER_DX + TILE_W + 6; // 328px
