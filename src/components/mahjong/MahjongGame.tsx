@@ -166,7 +166,8 @@ export function MahjongGame() {
   useEffect(() => {
     const bw = mode === 'speed' ? SPEED_BOARD_W : BOARD_W;
     function updateScale() {
-      setScale(Math.min(1, (window.innerWidth - 16) / bw, (window.innerHeight - 160) / BOARD_H));
+      // Allow upscaling beyond 1.0 on larger screens, capped at 1.6
+      setScale(Math.min(1.6, (window.innerWidth - 16) / bw, (window.innerHeight - 160) / BOARD_H));
     }
     updateScale();
     window.addEventListener('resize', updateScale);
@@ -343,9 +344,10 @@ export function MahjongGame() {
         style={{
           width: boardW,
           flexShrink: 0,
+          alignSelf: 'center',
           transformOrigin: 'top center',
           transform: `scale(${scale})`,
-          marginBottom: scale < 1 ? `${boardH * (scale - 1)}px` : 0,
+          marginBottom: `${boardH * (scale - 1)}px`,
         }}
       >
         <Board
