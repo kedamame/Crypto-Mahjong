@@ -416,6 +416,7 @@ export function MahjongGame() {
           pairsMatched={pairsMatched}
           shuffleCount={shuffleCount}
           clearCount={clearCount}
+          mode={mode ?? 'normal'}
           onNewGame={() => startNewGame()}
           onClearRecorded={() => {
             refetchClearCount();

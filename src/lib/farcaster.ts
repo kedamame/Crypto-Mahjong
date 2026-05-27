@@ -69,17 +69,30 @@ function ordinal(n: number): string {
   return n + (s[(v - 20) % 10] ?? s[v] ?? s[0]);
 }
 
-export async function shareOnFarcaster(clearCount: number, elapsedSec: number): Promise<void> {
+export async function shareOnFarcaster(
+  clearCount: number | null,
+  elapsedSec: number,
+  mode: string,
+  shuffleCount: number,
+): Promise<void> {
   const { sdk } = await import('@farcaster/miniapp-sdk');
   const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://your-app.vercel.app';
   const mins = Math.floor(elapsedSec / 60);
   const secs = elapsedSec % 60;
   const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
 
-  const text =
-    clearCount === 1
-      ? `Cleared Crypto Mahjong in ${timeStr}! My first clear on Base. Play at ${APP_URL}`
-      : `Cleared Crypto Mahjong in ${timeStr}! That's my ${ordinal(clearCount)} clear on Base. Play at ${APP_URL}`;
+  const modeStr  = mode === 'speed' ? ' [SPEED]' : '';
+  const clearStr = clearCount != null
+    ? ` That's my ${ordinal(clearCount)} clear on Base.`
+    : '';
+  const text = `Cleared Crypto Mahjong${modeStr} in ${timeStr}!${clearStr}`;
 
-  await sdk.actions.openUrl(`https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`);
+  // Build share page URL with game result params for OG image
+  const clears   = clearCount ?? 0;
+  const shareUrl = `${APP_URL}/share?mode=${mode}&elapsed=${elapsedSec}&clears=${clears}&shuffles=${shuffleCount}`;
+
+  const composeUrl =
+    `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}&embeds[0]=${encodeURIComponent(shareUrl)}`;
+
+  await sdk.actions.openUrl(composeUrl);
 }

@@ -6,6 +6,7 @@ import { base } from 'wagmi/chains';
 import { encodeFunctionData } from 'viem';
 import { MAHJONG_CONTRACT_ADDRESS, MAHJONG_ABI, isContractConfigured } from '@/lib/contract';
 import { shareOnFarcaster } from '@/lib/farcaster';
+import { GameMode } from '@/lib/mahjong';
 
 // Raw EIP-1193 provider type (works with Rabby / EIP-6963 wallets)
 type EthProvider = {
@@ -26,11 +27,12 @@ interface WinModalProps {
   pairsMatched: number;
   shuffleCount: number;
   clearCount: number | null;
+  mode: GameMode;
   onNewGame: () => void;
   onClearRecorded: () => void;
 }
 
-export function WinModal({ elapsedSec, pairsMatched, shuffleCount, clearCount, onNewGame, onClearRecorded }: WinModalProps) {
+export function WinModal({ elapsedSec, pairsMatched, shuffleCount, clearCount, mode, onNewGame, onClearRecorded }: WinModalProps) {
   const { address, isConnected, connector } = useAccount();
   const { connect, connectors } = useConnect();
 
@@ -117,8 +119,7 @@ export function WinModal({ elapsedSec, pairsMatched, shuffleCount, clearCount, o
   }
 
   async function handleShare() {
-    const count = clearCount ?? 1;
-    await shareOnFarcaster(count, elapsedSec);
+    await shareOnFarcaster(clearCount, elapsedSec, mode, shuffleCount);
     setShared(true);
   }
 
