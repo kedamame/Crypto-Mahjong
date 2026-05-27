@@ -15,6 +15,7 @@ import {
   GameMode,
   BOARD_W,
   BOARD_H,
+  SPEED_BOARD_W,
 } from '@/lib/mahjong';
 import { Board } from './Board';
 import { WinModal } from './WinModal';
@@ -163,8 +164,9 @@ export function MahjongGame() {
   // --- Scale to fit viewport ---
   const [scale, setScale] = useState(1);
   useEffect(() => {
+    const bw = mode === 'speed' ? SPEED_BOARD_W : BOARD_W;
     function updateScale() {
-      setScale(Math.min(1, (window.innerWidth - 16) / BOARD_W, (window.innerHeight - 160) / BOARD_H));
+      setScale(Math.min(1, (window.innerWidth - 16) / bw, (window.innerHeight - 160) / BOARD_H));
     }
     updateScale();
     window.addEventListener('resize', updateScale);
@@ -173,7 +175,7 @@ export function MahjongGame() {
 
   const remaining = tiles.filter((t) => !t.removed).length;
   const isSpeed = mode === 'speed';
-  const boardW = BOARD_W;
+  const boardW = isSpeed ? SPEED_BOARD_W : BOARD_W;
   const boardH = BOARD_H;
 
   // ---- Mode selection screen ----
@@ -353,6 +355,8 @@ export function MahjongGame() {
           flashingUids={flashingUids}
           onTileClick={handleTileClick}
           onBlockedTileClick={handleBlockedTileClick}
+          boardW={boardW}
+          boardH={boardH}
         />
       </div>
 

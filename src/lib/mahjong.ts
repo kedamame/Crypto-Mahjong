@@ -318,55 +318,64 @@ export const LAYOUTS: Layout[] = LAYOUT_SPECS.map((spec) => ({
 }));
 
 // ---- Speed Mode layouts (72 tiles = 36 pairs) ----
-// Shallower, fewer layers → more free tiles visible at once
+// All layouts use col 0-7 (8 columns) → fits miniapp viewport without downscaling
 
 const SPEED_LAYOUT_SPECS: Array<{ name: string; specs: Spec[] }> = [
   {
-    // 9×6=54 + 7×2=14 + 2×2=4 = 72
+    // Flat pyramid: 48 + 24 = 72
     name: 'FLAT',
     specs: [
-      { c0:0, c1:8, r0:0, r1:5, l:0 },
-      { c0:1, c1:7, r0:2, r1:3, l:1 },
-      { c0:3, c1:4, r0:2, r1:3, l:2 },
+      { c0:0, c1:7, r0:0, r1:5, l:0 }, // 8×6=48
+      { c0:1, c1:6, r0:1, r1:4, l:1 }, // 6×4=24
     ],
   },
   {
-    // 12×4=48 + 8×2=16 + 4×2=8 = 72
+    // Wide mesa: 40 + 24 + 8 = 72
     name: 'WIDE',
     specs: [
-      { c0:0, c1:11, r0:0, r1:3, l:0 },
-      { c0:2, c1:9,  r0:1, r1:2, l:1 },
-      { c0:4, c1:7,  r0:1, r1:2, l:2 },
+      { c0:0, c1:7, r0:0, r1:4, l:0 }, // 8×5=40
+      { c0:0, c1:7, r0:1, r1:3, l:1 }, // 8×3=24
+      { c0:0, c1:7, r0:2, r1:2, l:2 }, // 8×1=8
     ],
   },
   {
-    // 8×8=64 + 4×2=8 = 72
+    // Full grid + center stack: 64 + 8 = 72
     name: 'SQUARE',
     specs: [
-      { c0:2, c1:9, r0:0, r1:7, l:0 },
-      { c0:4, c1:7, r0:3, r1:4, l:1 },
+      { c0:0, c1:7, r0:0, r1:7, l:0 }, // 8×8=64
+      { c0:2, c1:5, r0:3, r1:4, l:1 }, // 4×2=8
     ],
   },
   {
-    // 8×6=48 + 6×4=24 = 72
+    // Staircase (deep stack on left): 48 + 16 + 4 + 4 = 72
     name: 'STEPS',
     specs: [
-      { c0:2, c1:9, r0:1, r1:6, l:0 },
-      { c0:3, c1:8, r0:2, r1:5, l:1 },
+      { c0:0, c1:7, r0:0, r1:5, l:0 }, // 8×6=48
+      { c0:0, c1:3, r0:1, r1:4, l:1 }, // 4×4=16
+      { c0:0, c1:1, r0:2, r1:3, l:2 }, // 2×2=4
+      { c0:0, c1:1, r0:2, r1:3, l:3 }, // 2×2=4
     ],
   },
   {
-    // Cross: L0:36 + L1:28 + L2:4 + L3:4 = 72
+    // Cross: 36 + 20 + 12 + 4 = 72
     name: 'CROSS',
     specs: [
-      { c0:0, c1:11, r0:3, r1:4, l:0 },
-      { c0:5, c1:6,  r0:0, r1:2, l:0 },
-      { c0:5, c1:6,  r0:5, r1:7, l:0 },
-      { c0:1, c1:10, r0:3, r1:4, l:1 },
-      { c0:5, c1:6,  r0:1, r1:2, l:1 },
-      { c0:5, c1:6,  r0:5, r1:6, l:1 },
-      { c0:5, c1:6,  r0:3, r1:4, l:2 },
-      { c0:5, c1:6,  r0:3, r1:4, l:3 },
+      // L0: cross arms + corner decorations
+      { c0:0, c1:7, r0:3, r1:4, l:0 }, // horizontal bar  16
+      { c0:3, c1:4, r0:0, r1:2, l:0 }, // upper vertical   6
+      { c0:3, c1:4, r0:5, r1:7, l:0 }, // lower vertical   6
+      { c0:0, c1:1, r0:0, r1:1, l:0 }, // top-left corner  4
+      { c0:6, c1:7, r0:0, r1:1, l:0 }, // top-right corner 4
+      // L1: inner cross
+      { c0:1, c1:6, r0:3, r1:4, l:1 }, // 12
+      { c0:3, c1:4, r0:1, r1:2, l:1 }, //  4
+      { c0:3, c1:4, r0:5, r1:6, l:1 }, //  4
+      // L2: smaller cross
+      { c0:2, c1:5, r0:3, r1:4, l:2 }, //  8
+      { c0:3, c1:4, r0:2, r1:2, l:2 }, //  2
+      { c0:3, c1:4, r0:5, r1:5, l:2 }, //  2
+      // L3: center
+      { c0:3, c1:4, r0:3, r1:4, l:3 }, //  4
     ],
   },
 ];
@@ -505,3 +514,6 @@ export function tilePixelPos(tile: GameTile): { x: number; y: number; z: number 
 // Accommodate widest layout (cols 0-11) + layer diagonal offset + tile width
 export const BOARD_W = 12 * TILE_W + LAYER_TOP * LAYER_DX + TILE_W;
 export const BOARD_H = 8 * TILE_H + LAYER_TOP * LAYER_DY + TILE_H;
+// Speed layouts use cols 0-7, max layer 3 → narrower board fits miniapp viewport
+const SPEED_MAX_LAYER = 3;
+export const SPEED_BOARD_W = 8 * TILE_W + SPEED_MAX_LAYER * LAYER_DX + TILE_W;

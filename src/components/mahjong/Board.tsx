@@ -11,9 +11,13 @@ interface BoardProps {
   flashingUids: Set<number>;
   onTileClick: (tile: GameTile) => void;
   onBlockedTileClick: (tile: GameTile) => void;
+  boardW?: number;
+  boardH?: number;
 }
 
-export function Board({ tiles, selectedUid, hintedUids, flashingUids, onTileClick, onBlockedTileClick }: BoardProps) {
+export function Board({ tiles, selectedUid, hintedUids, flashingUids, onTileClick, onBlockedTileClick, boardW: bw, boardH: bh }: BoardProps) {
+  const boardWidth = bw ?? BOARD_W;
+  const boardHeight = bh ?? BOARD_H;
   // Shared icon-failure state: when ANY tile with typeId X fails, ALL tiles with X show fallback
   const [failedTypeIds, setFailedTypeIds] = useState<Set<string>>(new Set());
   const handleIconFailed = useCallback((typeId: string) => {
@@ -35,8 +39,8 @@ export function Board({ tiles, selectedUid, hintedUids, flashingUids, onTileClic
     <div
       style={{
         position: 'relative',
-        width: BOARD_W,
-        height: BOARD_H,
+        width: boardWidth,
+        height: boardHeight,
         flexShrink: 0,
       }}
     >
