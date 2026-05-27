@@ -54,7 +54,8 @@
       "Bash(git commit -m 'fix: farcaster manifest validation — shorten subtitle, trim tags to 5 *)",
       "Bash(git commit -m 'feat: larger tiles in Speed mode — 8-col layouts, SPEED_BOARD_W=360 *)",
       "Bash(git commit -m 'feat: upscale board to fill viewport + explicit center alignment *)",
-      "Bash(git commit -m 'fix: correct BOARD_W/SPEED_BOARD_W for symmetric left-right margins *)"
+      "Bash(git commit -m 'fix: correct BOARD_W/SPEED_BOARD_W for symmetric left-right margins *)",
+      "Bash(git commit -m 'fix: compute board dimensions from actual tile extents for true centering *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\kaexr\\Desktop\\Baseapp\\new-miniapp\\src\\app\\.well-known"

@@ -11,11 +11,14 @@ import {
   isWon,
   isDeadlocked,
   reshuffleTiles,
+  tilePixelPos,
   GameTile,
   GameMode,
   BOARD_W,
   BOARD_H,
-  SPEED_BOARD_W,
+  TILE_W,
+  TILE_H,
+  LAYER_DX,
 } from '@/lib/mahjong';
 import { Board } from './Board';
 import { WinModal } from './WinModal';
@@ -38,6 +41,9 @@ export function MahjongGame() {
   const [finalElapsed, setFinalElapsed] = useState(0);
   const [shuffleCount, setShuffleCount] = useState(0);
   const [flashingUids, setFlashingUids] = useState<Set<number>>(new Set());
+  // Actual tile-content bounds, computed fresh on each deal
+  const [actualBoardW, setActualBoardW] = useState<number>(BOARD_W);
+  const [actualBoardH, setActualBoardH] = useState<number>(BOARD_H);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -66,6 +72,16 @@ export function MahjongGame() {
   const startNewGame = useCallback((m?: GameMode) => {
     const activeMode = m ?? mode ?? 'normal';
     const result = dealNewGame({ mode: activeMode });
+
+    // Compute board dimensions from actual tile extents (ensures symmetric centering)
+    let maxRight = 0, maxBottom = 0;
+    for (const t of result.tiles) {
+      maxRight  = Math.max(maxRight,  t.col * TILE_W + t.layer * LAYER_DX + (TILE_W - 2) + 4);
+      maxBottom = Math.max(maxBottom, tilePixelPos(t).y + (TILE_H - 2) + 4);
+    }
+    setActualBoardW(maxRight  + 2);
+    setActualBoardH(maxBottom + 2);
+
     setTiles(result.tiles);
     setLayoutName(result.layoutName);
     setTotalPairs(result.totalPairs);
@@ -164,20 +180,18 @@ export function MahjongGame() {
   // --- Scale to fit viewport ---
   const [scale, setScale] = useState(1);
   useEffect(() => {
-    const bw = mode === 'speed' ? SPEED_BOARD_W : BOARD_W;
     function updateScale() {
-      // Allow upscaling beyond 1.0 on larger screens, capped at 1.6
-      setScale(Math.min(1.6, (window.innerWidth - 16) / bw, (window.innerHeight - 160) / BOARD_H));
+      setScale(Math.min(1.6, (window.innerWidth - 16) / actualBoardW, (window.innerHeight - 160) / actualBoardH));
     }
     updateScale();
     window.addEventListener('resize', updateScale);
     return () => window.removeEventListener('resize', updateScale);
-  }, [mode]);
+  }, [actualBoardW, actualBoardH]);
 
   const remaining = tiles.filter((t) => !t.removed).length;
   const isSpeed = mode === 'speed';
-  const boardW = isSpeed ? SPEED_BOARD_W : BOARD_W;
-  const boardH = BOARD_H;
+  const boardW = actualBoardW;
+  const boardH = actualBoardH;
 
   // ---- Mode selection screen ----
   if (mode === null) {
