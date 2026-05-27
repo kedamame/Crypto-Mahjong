@@ -97,7 +97,38 @@ export function Tile({ tile, info, isFree, iconFailed, onIconFailed, isSelected,
             paddingBottom: 1,
           }}
         >
-          {showIcon ? (
+          {info.suit === 'flower' || info.suit === 'season' ? (
+            // Group tiles (flower / season): show group label prominently
+            // so all tiles in the same match-group look alike
+            <>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 900,
+                  color: suitColor,
+                  lineHeight: 1,
+                  fontFamily: 'Courier New, monospace',
+                  letterSpacing: 0,
+                }}
+              >
+                {SUIT_ABBR[info.suit]}
+              </div>
+              <div
+                style={{
+                  fontSize: 5,
+                  fontWeight: 700,
+                  color: '#888880',
+                  lineHeight: 1.1,
+                  marginTop: 3,
+                  fontFamily: 'Courier New, monospace',
+                  letterSpacing: -0.2,
+                  textAlign: 'center',
+                }}
+              >
+                {info.label}
+              </div>
+            </>
+          ) : showIcon ? (
             <img
               src={iconUrl}
               width={22}
@@ -125,37 +156,41 @@ export function Tile({ tile, info, isFree, iconFailed, onIconFailed, isSelected,
             </div>
           )}
 
-          {/* Token name */}
-          <div
-            style={{
-              fontSize: info.label.length > 4 ? 6 : 7,
-              fontWeight: 700,
-              color: '#444440',
-              lineHeight: 1.1,
-              marginTop: 2,
-              fontFamily: 'Courier New, monospace',
-              letterSpacing: -0.3,
-              textAlign: 'center',
-            }}
-          >
-            {info.label}
-          </div>
+          {/* Token name — regular tiles only */}
+          {info.suit !== 'flower' && info.suit !== 'season' && (
+            <div
+              style={{
+                fontSize: info.label.length > 4 ? 6 : 7,
+                fontWeight: 700,
+                color: '#444440',
+                lineHeight: 1.1,
+                marginTop: 2,
+                fontFamily: 'Courier New, monospace',
+                letterSpacing: -0.3,
+                textAlign: 'center',
+              }}
+            >
+              {info.label}
+            </div>
+          )}
         </div>
 
-        {/* Bottom suit abbr */}
-        <div
-          style={{
-            fontSize: 5,
-            fontWeight: 700,
-            color: suitColor,
-            textAlign: 'center',
-            paddingBottom: 2,
-            fontFamily: 'Courier New, monospace',
-            letterSpacing: 0.5,
-          }}
-        >
-          {SUIT_ABBR[info.suit] ?? ''}
-        </div>
+        {/* Bottom suit abbr — regular tiles only */}
+        {info.suit !== 'flower' && info.suit !== 'season' && (
+          <div
+            style={{
+              fontSize: 5,
+              fontWeight: 700,
+              color: suitColor,
+              textAlign: 'center',
+              paddingBottom: 2,
+              fontFamily: 'Courier New, monospace',
+              letterSpacing: 0.5,
+            }}
+          >
+            {SUIT_ABBR[info.suit] ?? ''}
+          </div>
+        )}
       </div>
     </div>
   );
