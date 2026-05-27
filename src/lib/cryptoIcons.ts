@@ -1,43 +1,46 @@
-// CoinGecko small image URLs — all tokens in this map have confirmed stable icons.
-// Tile.tsx uses these with an onError fallback to the letter symbol.
+// Trust Wallet Assets via jsDelivr CDN — reliable, no rate limits
+// Pattern: chain/info/logo.png  or  ethereum/assets/{address}/logo.png
+const TW = 'https://cdn.jsdelivr.net/gh/trustwallet/assets@master/blockchains';
+const ETH = `${TW}/ethereum/assets`;
+
 export const CRYPTO_ICON_URLS: Record<string, string> = {
   // L1 Major Chains
-  BTC:   'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',
-  ETH:   'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
-  SOL:   'https://assets.coingecko.com/coins/images/4128/small/solana.png',
-  BNB:   'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',
-  XRP:   'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png',
-  ADA:   'https://assets.coingecko.com/coins/images/975/small/cardano.png',
-  AVAX:  'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png',
-  DOT:   'https://assets.coingecko.com/coins/images/12171/small/polkadot.png',
-  LTC:   'https://assets.coingecko.com/coins/images/2/small/litecoin.png',
-  // DeFi
-  UNI:   'https://assets.coingecko.com/coins/images/12504/small/uniswap-uni.png',
-  AAVE:  'https://assets.coingecko.com/coins/images/12645/small/AAVE.png',
-  MKR:   'https://assets.coingecko.com/coins/images/1364/small/Mark_Maker.png',
-  CRV:   'https://assets.coingecko.com/coins/images/12124/small/Curve.png',
-  COMP:  'https://assets.coingecko.com/coins/images/10775/small/COMP.png',
-  YFI:   'https://assets.coingecko.com/coins/images/11849/small/yearn.jpg',
-  SUSHI: 'https://assets.coingecko.com/coins/images/12271/small/512x512_Logo_no_chop.png',
-  BAL:   'https://assets.coingecko.com/coins/images/11683/small/Balancer.png',
-  LDO:   'https://assets.coingecko.com/coins/images/13573/small/Lido_DAO.png',
+  BTC:   `${TW}/bitcoin/info/logo.png`,
+  ETH:   `${TW}/ethereum/info/logo.png`,
+  SOL:   `${TW}/solana/info/logo.png`,
+  BNB:   `${TW}/smartchain/info/logo.png`,
+  XRP:   `${TW}/ripple/info/logo.png`,
+  ADA:   `${TW}/cardano/info/logo.png`,
+  AVAX:  `${TW}/avalanchec/info/logo.png`,
+  DOT:   `${TW}/polkadot/info/logo.png`,
+  LTC:   `${TW}/litecoin/info/logo.png`,
+  // DeFi (ERC-20 on Ethereum)
+  UNI:   `${ETH}/0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984/logo.png`,
+  AAVE:  `${ETH}/0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9/logo.png`,
+  MKR:   `${ETH}/0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2/logo.png`,
+  CRV:   `${ETH}/0xD533a949740bb3306d119CC777fa900bA034cd52/logo.png`,
+  COMP:  `${ETH}/0xc00e94Cb662C3520282E6f5717214004A7f26888/logo.png`,
+  YFI:   `${ETH}/0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e/logo.png`,
+  SUSHI: `${ETH}/0x6B3595068778DD592e39A122f4f5a5cF09C90fE2/logo.png`,
+  BAL:   `${ETH}/0xba100000625a3754423978a60c9317c58a424e3D/logo.png`,
+  LDO:   `${ETH}/0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32/logo.png`,
   // Alt Chains / L2
-  ARB:   'https://assets.coingecko.com/coins/images/16547/small/photo_2023-03-29_21.47.00.jpeg',
-  OP:    'https://assets.coingecko.com/coins/images/25244/small/Optimism.png',
-  IMX:   'https://assets.coingecko.com/coins/images/17233/small/imx.png',
-  MATIC: 'https://assets.coingecko.com/coins/images/4713/small/matic-token-icon.png',
-  APT:   'https://assets.coingecko.com/coins/images/26076/small/aptos_round.png',
-  SUI:   'https://assets.coingecko.com/coins/images/26375/small/sui_asset.jpeg',
-  NEAR:  'https://assets.coingecko.com/coins/images/10365/small/near.jpg',
-  ATOM:  'https://assets.coingecko.com/coins/images/1481/small/cosmos_hub.png',
-  FTM:   'https://assets.coingecko.com/coins/images/4001/small/Fantom_round.png',
+  ARB:   `${TW}/arbitrum/info/logo.png`,
+  OP:    `${TW}/optimism/info/logo.png`,
+  IMX:   `${ETH}/0xF57e7e7C23978C3cAEC3C3548E3D615c346e79fF/logo.png`,
+  MATIC: `${TW}/polygon/info/logo.png`,
+  APT:   `${TW}/aptos/info/logo.png`,
+  SUI:   `${TW}/sui/info/logo.png`,
+  NEAR:  `${TW}/near/info/logo.png`,
+  ATOM:  `${TW}/cosmos/info/logo.png`,
+  FTM:   `${TW}/fantom/info/logo.png`,
   // Infra / Protocol
-  LINK:  'https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png',
-  GRT:   'https://assets.coingecko.com/coins/images/13397/small/Graph_Token.png',
-  SNX:   'https://assets.coingecko.com/coins/images/3406/small/SNX.png',
-  XLM:   'https://assets.coingecko.com/coins/images/100/small/Stellar_symbol_black_RGB.png',
+  LINK:  `${ETH}/0x514910771AF9Ca656af840dff83E8264EcF986CA/logo.png`,
+  GRT:   `${ETH}/0xc944E90C64B2c07662A292be6244BDf05Cda44a7/logo.png`,
+  SNX:   `${ETH}/0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F/logo.png`,
+  XLM:   `${TW}/stellar/info/logo.png`,
   // Stablecoins / Wrapped
-  USDC:  'https://assets.coingecko.com/coins/images/6319/small/usdc.png',
-  USDT:  'https://assets.coingecko.com/coins/images/325/small/Tether.png',
-  WBTC:  'https://assets.coingecko.com/coins/images/7598/small/wrapped_bitcoin_wbtc.png',
+  USDC:  `${ETH}/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png`,
+  USDT:  `${ETH}/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png`,
+  WBTC:  `${ETH}/0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599/logo.png`,
 };

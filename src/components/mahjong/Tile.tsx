@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { GameTile, TileInfo, TILE_W, TILE_H, tilePixelPos } from '@/lib/mahjong';
 import { CRYPTO_ICON_URLS } from '@/lib/cryptoIcons';
 
@@ -8,6 +7,8 @@ interface TileProps {
   tile: GameTile;
   info: TileInfo;
   isFree: boolean;
+  iconFailed: boolean;
+  onIconFailed: () => void;
   isSelected: boolean;
   isHinted: boolean;
   isFlashing: boolean;
@@ -25,8 +26,7 @@ const SUIT_ABBR: Record<string, string> = {
   season: 'SN',
 };
 
-export function Tile({ tile, info, isFree, isSelected, isHinted, isFlashing, onClick, onBlockedClick }: TileProps) {
-  const [imgFailed, setImgFailed] = useState(false);
+export function Tile({ tile, info, isFree, iconFailed, onIconFailed, isSelected, isHinted, isFlashing, onClick, onBlockedClick }: TileProps) {
   const { x, y, z } = tilePixelPos(tile);
 
   if (tile.removed) return null;
@@ -38,7 +38,7 @@ export function Tile({ tile, info, isFree, isSelected, isHinted, isFlashing, onC
   const filter = isFree ? 'none' : 'grayscale(0.85) brightness(0.55)';
 
   const iconUrl = CRYPTO_ICON_URLS[tile.typeId];
-  const showIcon = !!iconUrl && !imgFailed;
+  const showIcon = !!iconUrl && !iconFailed;
 
   return (
     <div
@@ -102,7 +102,7 @@ export function Tile({ tile, info, isFree, isSelected, isHinted, isFlashing, onC
               src={iconUrl}
               width={22}
               height={22}
-              onError={() => setImgFailed(true)}
+              onError={onIconFailed}
               style={{
                 objectFit: 'contain',
                 borderRadius: 3,

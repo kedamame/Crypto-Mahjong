@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useCallback } from 'react';
 import { GameTile, ALL_TILE_INFO, isFreeTile, BOARD_W, BOARD_H } from '@/lib/mahjong';
 import { Tile } from './Tile';
 
@@ -13,6 +14,17 @@ interface BoardProps {
 }
 
 export function Board({ tiles, selectedUid, hintedUids, flashingUids, onTileClick, onBlockedTileClick }: BoardProps) {
+  // Shared icon-failure state: when ANY tile with typeId X fails, ALL tiles with X show fallback
+  const [failedTypeIds, setFailedTypeIds] = useState<Set<string>>(new Set());
+  const handleIconFailed = useCallback((typeId: string) => {
+    setFailedTypeIds((prev) => {
+      if (prev.has(typeId)) return prev;
+      const next = new Set(prev);
+      next.add(typeId);
+      return next;
+    });
+  }, []);
+
   const renderOrder = [...tiles].sort((a, b) => {
     if (a.layer !== b.layer) return a.layer - b.layer;
     if (a.row !== b.row) return a.row - b.row;
@@ -39,6 +51,8 @@ export function Board({ tiles, selectedUid, hintedUids, flashingUids, onTileClic
             tile={tile}
             info={info}
             isFree={free}
+            iconFailed={failedTypeIds.has(tile.typeId)}
+            onIconFailed={() => handleIconFailed(tile.typeId)}
             isSelected={tile.uid === selectedUid}
             isHinted={hintedUids.has(tile.uid)}
             isFlashing={flashingUids.has(tile.uid)}
