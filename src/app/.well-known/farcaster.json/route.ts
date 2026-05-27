@@ -12,7 +12,7 @@ export async function GET() {
     miniapp: {
       version: '1',
       name: 'Crypto Mahjong',
-      subtitle: 'Mahjong solitaire with crypto tiles',
+      subtitle: 'Mahjong solitaire on Base',
       description:
         'Match pairs of free crypto tiles to clear the board. 144 tiles, 72 pairs, 34 token types including BTC, ETH, ARB, BASE, DEGEN and more. Record your clears on Base.',
       homeUrl: APP_URL,
@@ -29,7 +29,7 @@ export async function GET() {
         `${APP_URL}/screenshot3.png`,
       ],
       primaryCategory: 'games',
-      tags: ['mahjong', 'solitaire', 'crypto', 'base', 'onchain', 'game', 'farcaster'],
+      tags: ['mahjong', 'crypto', 'base', 'game', 'onchain'],
       tagline: 'Crypto Mahjong on Base',
       noindex: false,
       requiredChains: ['eip155:8453'],
