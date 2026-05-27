@@ -3,25 +3,61 @@ import { NextRequest } from 'next/server';
 
 export const runtime = 'edge';
 
+// 900x600 = 3:2 — matches fc:miniapp imageUrl display ratio in Farcaster
+const W = 900;
+const H = 600;
+
+const TW  = 'https://cdn.jsdelivr.net/gh/trustwallet/assets@master/blockchains';
+const ETH = `${TW}/ethereum/assets`;
+
+const ICON_URLS: Record<string, string> = {
+  BTC:   `${TW}/bitcoin/info/logo.png`,
+  ETH:   `${TW}/ethereum/info/logo.png`,
+  BASE:  `${TW}/base/info/logo.png`,
+  SOL:   `${TW}/solana/info/logo.png`,
+  DEGEN: `${TW}/base/assets/0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed/logo.png`,
+  UNI:   `${ETH}/0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984/logo.png`,
+  ARB:   `${TW}/arbitrum/info/logo.png`,
+};
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  const chunks: string[] = [];
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK)
+    chunks.push(String.fromCharCode(...(bytes.subarray(i, i + CHUNK) as unknown as number[])));
+  return btoa(chunks.join(''));
+}
+
+async function fetchImg(url: string): Promise<string> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return '';
+    const ct  = res.headers.get('content-type') || 'image/png';
+    const buf = await res.arrayBuffer();
+    return `data:${ct};base64,${arrayBufferToBase64(buf)}`;
+  } catch {
+    return '';
+  }
+}
+
 function ordinal(n: number): string {
   const s = ['th', 'st', 'nd', 'rd'];
   const v = n % 100;
   return n + (s[(v - 20) % 10] ?? s[v] ?? s[0]);
 }
 
-// 900x600 = 3:2 — matches fc:miniapp imageUrl display ratio in Farcaster clients
-const W = 900;
-const H = 600;
-
 function OgTile({
   label,
   color,
+  imgSrc,
   x,
   y,
   rotate,
 }: {
   label: string;
   color: string;
+  imgSrc: string;
   x: number;
   y: number;
   rotate: number;
@@ -51,29 +87,38 @@ function OgTile({
           justifyContent: 'center',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            width: 38,
-            height: 38,
-            borderRadius: 19,
-            backgroundColor: color,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+        {imgSrc ? (
+          <img
+            src={imgSrc}
+            width={38}
+            height={38}
+            style={{ borderRadius: 19, objectFit: 'contain' }}
+          />
+        ) : (
           <div
             style={{
               display: 'flex',
-              color: '#fff',
-              fontSize: 16,
-              fontWeight: 900,
-              fontFamily: 'monospace',
+              width: 38,
+              height: 38,
+              borderRadius: 19,
+              backgroundColor: color,
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            {label[0]}
+            <div
+              style={{
+                display: 'flex',
+                color: '#fff',
+                fontSize: 16,
+                fontWeight: 900,
+                fontFamily: 'monospace',
+              }}
+            >
+              {label[0]}
+            </div>
           </div>
-        </div>
+        )}
         <div
           style={{
             display: 'flex',
@@ -95,8 +140,8 @@ function OgTile({
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const mode     = searchParams.get('mode') ?? 'normal';
-  const elapsed  = parseInt(searchParams.get('elapsed') ?? '0', 10);
-  const clears   = parseInt(searchParams.get('clears')  ?? '0', 10);
+  const elapsed  = parseInt(searchParams.get('elapsed')  ?? '0', 10);
+  const clears   = parseInt(searchParams.get('clears')   ?? '0', 10);
   const shuffles = parseInt(searchParams.get('shuffles') ?? '0', 10);
 
   const mins    = Math.floor(elapsed / 60);
@@ -106,7 +151,12 @@ export async function GET(req: NextRequest) {
   const isSpeed = mode === 'speed';
   const modeBg  = isSpeed ? '#3558c8' : '#141410';
 
-  const tiles = [
+  // Fetch all token icons in parallel
+  const labels = ['BTC', 'ETH', 'BASE', 'SOL', 'DEGEN', 'UNI', 'ARB'] as const;
+  const imgs   = await Promise.all(labels.map((l) => fetchImg(ICON_URLS[l])));
+  const iconOf = Object.fromEntries(labels.map((l, i) => [l, imgs[i]]));
+
+  const TILE_META = [
     { label: 'BTC',   color: '#f7931a', x: 556, y: 18,  rotate: -10 },
     { label: 'ETH',   color: '#627eea', x: 726, y: 10,  rotate: 6   },
     { label: 'BASE',  color: '#3558c8', x: 820, y: 88,  rotate: 12  },
@@ -129,8 +179,16 @@ export async function GET(req: NextRequest) {
         }}
       >
         {/* Decorative tiles — right side */}
-        {tiles.map((t) => (
-          <OgTile key={t.label} {...t} />
+        {TILE_META.map((t) => (
+          <OgTile
+            key={t.label}
+            label={t.label}
+            color={t.color}
+            imgSrc={iconOf[t.label] ?? ''}
+            x={t.x}
+            y={t.y}
+            rotate={t.rotate}
+          />
         ))}
 
         {/* Divider */}
@@ -160,13 +218,7 @@ export async function GET(req: NextRequest) {
           }}
         >
           {/* CLEARED + mode badge */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: 16,
-            }}
-          >
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
             <div
               style={{
                 display: 'flex',
@@ -231,89 +283,33 @@ export async function GET(req: NextRequest) {
             PLAYED
           </div>
 
-          {/* Stats row */}
+          {/* Stats */}
           <div style={{ display: 'flex', gap: 36 }}>
-            {/* TIME */}
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  fontSize: 9,
-                  letterSpacing: 3,
-                  color: '#888880',
-                  fontFamily: 'monospace',
-                  whiteSpace: 'nowrap',
-                }}
-              >
+              <div style={{ display: 'flex', fontSize: 9, letterSpacing: 3, color: '#888880', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
                 TIME
               </div>
-              <div
-                style={{
-                  display: 'flex',
-                  fontSize: 32,
-                  fontWeight: 900,
-                  color: '#3558c8',
-                  fontFamily: 'monospace',
-                  whiteSpace: 'nowrap',
-                }}
-              >
+              <div style={{ display: 'flex', fontSize: 32, fontWeight: 900, color: '#3558c8', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
                 {timeStr}
               </div>
             </div>
 
-            {/* CLEARS — only if recorded */}
             {clears > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div
-                  style={{
-                    display: 'flex',
-                    fontSize: 9,
-                    letterSpacing: 3,
-                    color: '#888880',
-                    fontFamily: 'monospace',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+                <div style={{ display: 'flex', fontSize: 9, letterSpacing: 3, color: '#888880', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
                   CLEARS
                 </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    fontSize: 32,
-                    fontWeight: 900,
-                    color: '#1a7a4a',
-                    fontFamily: 'monospace',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+                <div style={{ display: 'flex', fontSize: 32, fontWeight: 900, color: '#1a7a4a', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
                   {ordinal(clears)}
                 </div>
               </div>
             )}
 
-            {/* SHUFFLES */}
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  fontSize: 9,
-                  letterSpacing: 3,
-                  color: '#888880',
-                  fontFamily: 'monospace',
-                  whiteSpace: 'nowrap',
-                }}
-              >
+              <div style={{ display: 'flex', fontSize: 9, letterSpacing: 3, color: '#888880', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
                 SHUFFLES
               </div>
-              <div
-                style={{
-                  display: 'flex',
-                  fontSize: 32,
-                  fontWeight: 900,
-                  color: '#888880',
-                  fontFamily: 'monospace',
-                }}
-              >
+              <div style={{ display: 'flex', fontSize: 32, fontWeight: 900, color: '#888880', fontFamily: 'monospace' }}>
                 {shuffles}
               </div>
             </div>
