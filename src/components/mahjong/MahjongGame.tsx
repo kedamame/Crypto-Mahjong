@@ -337,23 +337,23 @@ export function MahjongGame() {
       )}
 
       {/* Board */}
-      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
-        <div
-          style={{
-            transformOrigin: 'top center',
-            transform: `scale(${scale})`,
-            marginBottom: scale < 1 ? `${boardH * (scale - 1)}px` : 0,
-          }}
-        >
-          <Board
-            tiles={tiles}
-            selectedUid={selectedUid}
-            hintedUids={hintedUids}
-            flashingUids={flashingUids}
-            onTileClick={handleTileClick}
-            onBlockedTileClick={handleBlockedTileClick}
-          />
-        </div>
+      <div
+        style={{
+          width: boardW,
+          flexShrink: 0,
+          transformOrigin: 'top center',
+          transform: `scale(${scale})`,
+          marginBottom: scale < 1 ? `${boardH * (scale - 1)}px` : 0,
+        }}
+      >
+        <Board
+          tiles={tiles}
+          selectedUid={selectedUid}
+          hintedUids={hintedUids}
+          flashingUids={flashingUids}
+          onTileClick={handleTileClick}
+          onBlockedTileClick={handleBlockedTileClick}
+        />
       </div>
 
       {/* Controls */}
